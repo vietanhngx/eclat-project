@@ -1,0 +1,119 @@
+# 🎯 Hệ thống Gợi ý Nội dung dựa trên Thuật toán Eclat
+
+> **Bài tập lớn môn Khai phá Dữ liệu** - Trường Đại học Xây dựng Hà Nội
+
+## 👥 Nhóm thực hiện
+
+| STT | Họ và tên | MSSV |
+|-----|-----------|------|
+| 1 | Nguyễn Việt Anh | 0203968 |
+| 2 | Nguyễn Việt Hùng | 0208768 |
+| 3 | Đỗ Quang Hợp | 0208568 |
+
+**Lớp:** 68CS2  
+**GVHD:** Phạm Hồng Phong
+
+---
+
+## 📌 Mục tiêu đề tài
+
+Phân tích dữ liệu log truy cập (clickstream) để tìm ra các nhóm nội dung thường được xem cùng nhau, từ đó đưa ra gợi ý:
+
+> *"Nếu người dùng xem nội dung A, hãy gợi ý nội dung B"*
+
+## 📂 Cấu trúc thư mục
+
+```
+Eclat_Project/
+|-- data/
+|   +-- raw/
+|       +-- msnbc.seq           # Dữ liệu gốc từ UCI (~989,818 phiên)
+|-- docs/
+|   |-- baocao.tex              # Báo cáo LaTeX
+|   +-- *.pdf                   # Tài liệu tham khảo
+|-- src/
+|   |-- data_loader.py          # Module đọc và tiền xử lý dữ liệu
+|   |-- eclat_algo.py           # Thuật toán Eclat (Vertical Data Format)
+|   +-- utils.py                # Sinh luật và hiển thị gợi ý
+|-- main.py                     # File điều phối chính
+|-- requirements.txt            # Dependencies (chỉ dùng thư viện chuẩn Python)
++-- README.md
+```
+
+## � Cách chạy
+
+```bash
+# Di chuyển vào thư mục project
+cd Eclat_Project
+
+# Chạy chương trình
+python main.py
+```
+
+**Tham số cấu hình (trong main.py):**
+- `MIN_SUPPORT = 0.02` (2%) - Ngưỡng hỗ trợ tối thiểu
+- `MIN_CONFIDENCE = 0.4` (40%) - Ngưỡng độ tin cậy tối thiểu
+- `DATA_LIMIT = None` - Đọc toàn bộ dữ liệu
+
+## 📊 Dữ liệu
+
+**Nguồn:** [MSNBC.com Anonymous Web Data - UCI Repository](https://archive.ics.uci.edu/dataset/133/msnbc+com+anonymous+web+data)
+
+**Thông tin:**
+- Số phiên: **989,818**
+- Số chuyên mục: **17**
+- Thu thập: 28/09/1999
+
+**Bảng ánh xạ 17 chuyên mục:**
+
+| ID | Tên tiếng Việt | ID | Tên tiếng Việt |
+|----|----------------|----|----------------|
+| 1  | Trang chủ      | 10 | Đời sống       |
+| 2  | Tin tức        | 11 | Kinh doanh     |
+| 3  | Công nghệ      | 12 | Thể thao       |
+| 4  | Địa phương     | 13 | Tóm tắt        |
+| 5  | Ý kiến         | 14 | Diễn đàn       |
+| 6  | Phát sóng      | 15 | Du lịch        |
+| 7  | Tổng hợp       | 16 | Tin MSN        |
+| 8  | Thời tiết      | 17 | Thể thao MSN   |
+| 9  | Sức khỏe       |    |                |
+
+## 🧠 Thuật toán Eclat
+
+**Eclat (Equivalence Class Clustering and bottom-up Lattice Traversal)** - Zaki (2000)
+
+**Đặc điểm:**
+- Sử dụng **Vertical Data Format** (định dạng dữ liệu dọc)
+- **Depth-First Search** thay vì BFS như Apriori
+- Tính Support bằng **phép giao TID-Sets**
+- Chỉ cần **một lần quét** cơ sở dữ liệu
+
+## 📈 Các chỉ số đánh giá
+
+| Chỉ số | Công thức | Ý nghĩa |
+|--------|-----------|---------|
+| **Support** | P(A ∩ B) | Tần suất xuất hiện đồng thời |
+| **Confidence** | Support(A∪B) / Support(A) | Xác suất B khi đã xem A |
+| **Lift** | Support(A∪B) / (Support(A) × Support(B)) | Độ tương quan (>1: tích cực) |
+
+## 📝 Kết quả mẫu
+
+```
+===========================================================================
+   💡 TOP 5 LUẬT GỢI Ý NỘI DUNG MẠNH NHẤT
+===========================================================================
+
+STT  | NẾU XEM         | GỢI Ý           | SUPPORT  | CONF    | LIFT
+---------------------------------------------------------------------------
+1    | Tổng hợp        | Phát sóng       | 3.36%    | 41.3%   | 1.88
+2    | Kinh doanh      | Trang chủ       | 3.31%    | 56.8%   | 1.80
+3    | Đời sống        | Trang chủ       | 2.65%    | 51.9%   | 1.64
+4    | Tổng hợp        | Trang chủ       | 3.68%    | 45.2%   | 1.43
+5    | Tin tức         | Trang chủ       | 7.55%    | 42.6%   | 1.35
+```
+
+## 📚 Tài liệu tham khảo
+
+1. Zaki, M.J. (2000). *Scalable Algorithms for Association Mining*. IEEE TKDE.
+2. Han, J., Kamber, M. (2011). *Data Mining: Concepts and Techniques* (3rd ed.).
+3. Agrawal, R. et al. (1993). *Mining Association Rules Between Sets of Items*.

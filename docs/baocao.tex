@@ -1,0 +1,679 @@
+\documentclass[12pt,a4paper]{article}
+
+% ============================================================
+% PACKAGES
+% ============================================================
+\usepackage[utf8]{vietnam}
+\usepackage[utf8]{inputenc}
+\usepackage[T5]{fontenc}
+\usepackage{times}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,positioning}
+
+% ============================================================
+% CẤU HÌNH
+% ============================================================
+\geometry{left=3cm, right=2cm, top=2.5cm, bottom=2.5cm}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+    citecolor=blue
+}
+
+% Cấu hình hiển thị code Python
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue}\bfseries,
+    stringstyle=\color{red},
+    commentstyle=\color{green!60!black}\itshape,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=5pt,
+    backgroundcolor=\color{gray!10},
+    showspaces=false,
+    showstringspaces=false,
+    frame=single,
+    rulecolor=\color{black!30},
+    tabsize=4,
+    captionpos=b,
+    breaklines=true,
+    breakatwhitespace=false,
+    escapeinside={(*@}{@*)},
+    literate={á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+             {à}{{\`a}}1 {è}{{\`e}}1 {ì}{{\`i}}1 {ò}{{\`o}}1 {ù}{{\`u}}1
+             {ả}{{\h{a}}}1 {ẻ}{{\h{e}}}1 {ỉ}{{\h{i}}}1 {ỏ}{{\h{o}}}1 {ủ}{{\h{u}}}1
+             {ã}{{\~a}}1 {ẽ}{{\~e}}1 {ĩ}{{\~i}}1 {õ}{{\~o}}1 {ũ}{{\~u}}1
+             {ạ}{{\d{a}}}1 {ẹ}{{\d{e}}}1 {ị}{{\d{i}}}1 {ọ}{{\d{o}}}1 {ụ}{{\d{u}}}1
+}
+
+% Đổi tên thuật toán sang tiếng Việt
+\floatname{algorithm}{Thuật toán}
+\renewcommand{\algorithmicrequire}{\textbf{Đầu vào:}}
+\renewcommand{\algorithmicensure}{\textbf{Đầu ra:}}
+
+% ============================================================
+% BẮT ĐẦU TÀI LIỆU
+% ============================================================
+\begin{document}
+
+% ============================================================
+% TRANG BÌA
+% ============================================================
+\begin{titlepage}
+    \centering
+    \vspace*{1cm}
+    
+    {\Large \textbf{TRƯỜNG ĐẠI HỌC XÂY DỰNG HÀ NỘI}}\\[0.3cm]
+    {\large \textbf{KHOA CÔNG NGHỆ THÔNG TIN}}\\[2cm]
+    
+    \rule{\linewidth}{0.5mm}\\[0.5cm]
+    {\LARGE \textbf{BÁO CÁO BÀI TẬP LỚN}}\\[0.3cm]
+    {\Large \textbf{MÔN: KHAI PHÁ DỮ LIỆU}}\\[0.5cm]
+    \rule{\linewidth}{0.5mm}\\[1.5cm]
+    
+    {\Large \textbf{Đề tài:}}\\[0.5cm]
+    {\large \textit{Ứng dụng thuật toán Eclat trong phân tích hành vi}}\\
+    {\large \textit{người dùng qua dữ liệu clickstream để gợi ý nội dung}}\\[2cm]
+    
+    \begin{flushleft}
+        \hspace{3.5cm}\textbf{Giảng viên hướng dẫn:} Phạm Hồng Phong\\[0.5cm]
+        \hspace{3.5cm}\textbf{Nhóm sinh viên thực hiện:}\\[0.3cm]
+        \hspace{3.5cm}
+        \begin{tabular}{@{}l@{\hspace{2cm}}l@{}}
+            1. Nguyễn Việt Anh & MSSV: 0203968 \\
+            2. Nguyễn Việt Hùng & MSSV: 0208768 \\
+            3. Đỗ Quang Hợp & MSSV: 0208568 \\
+        \end{tabular}\\[0.3cm]
+        \hspace{3.5cm}\textbf{Lớp:} 68CS2\\
+    \end{flushleft}
+    
+    \vfill
+    {\large Thành phố ..., tháng ... năm 2026}
+\end{titlepage}
+
+% ============================================================
+% MỤC LỤC
+% ============================================================
+\tableofcontents
+\newpage
+
+% ============================================================
+% CHƯƠNG 1: TỔNG QUAN
+% ============================================================
+\section{Tổng quan đề tài}
+
+\subsection{Đặt vấn đề}
+
+Trong thời đại số hóa hiện nay, các website và ứng dụng web tạo ra lượng dữ liệu khổng lồ về hành vi người dùng (clickstream data). Việc phân tích dữ liệu này giúp:
+\begin{itemize}
+    \item Hiểu rõ hành vi và sở thích của người dùng
+    \item Tối ưu hóa trải nghiệm người dùng (UX)
+    \item Đưa ra gợi ý nội dung phù hợp, tăng thời gian ở lại trang
+    \item Tăng tỷ lệ chuyển đổi và doanh thu cho doanh nghiệp
+\end{itemize}
+
+\textbf{Khai phá luật kết hợp (Association Rule Mining)} là một kỹ thuật quan trọng trong lĩnh vực Khai phá Dữ liệu, cho phép khám phá các mối quan hệ tiềm ẩn giữa các mục trong tập dữ liệu lớn \cite{han2011}.
+
+\subsection{Mục tiêu đề tài}
+
+Đề tài này nhằm:
+\begin{enumerate}
+    \item Nghiên cứu và triển khai thuật toán \textbf{Eclat} từ đầu (from scratch)
+    \item Áp dụng vào phân tích dữ liệu clickstream thực tế từ MSNBC.com
+    \item Sinh các luật gợi ý dạng: \textit{"Nếu người dùng xem nội dung A, hãy gợi ý nội dung B"}
+    \item Đánh giá hiệu quả các luật bằng các chỉ số: Support, Confidence, Lift
+\end{enumerate}
+
+\subsection{Phạm vi nghiên cứu}
+
+\begin{itemize}
+    \item \textbf{Dữ liệu}: Bộ dữ liệu MSNBC.com Anonymous Web Data từ UCI Machine Learning Repository \cite{uci_msnbc}
+    \item \textbf{Thuật toán}: Eclat (Equivalence Class Transformation) \cite{zaki2000}
+    \item \textbf{Ngôn ngữ}: Python 3.x
+    \item \textbf{Phương pháp}: Triển khai thủ công, không sử dụng thư viện có sẵn
+\end{itemize}
+
+% ============================================================
+% CHƯƠNG 2: CƠ SỞ LÝ THUYẾT
+% ============================================================
+\section{Cơ sở lý thuyết}
+
+\subsection{Khai phá luật kết hợp (Association Rule Mining)}
+
+Khai phá luật kết hợp là quá trình tìm kiếm các mối quan hệ thú vị giữa các mục (items) trong tập dữ liệu giao dịch. Phương pháp này được Agrawal et al. giới thiệu lần đầu năm 1993 \cite{agrawal1993}.
+
+\subsubsection{Các khái niệm cơ bản}
+
+\textbf{Định nghĩa 2.1 (Itemset):} Cho $I = \{i_1, i_2, ..., i_n\}$ là tập hợp các mục. Một itemset $X$ là tập con của $I$, ký hiệu $X \subseteq I$.
+
+\textbf{Định nghĩa 2.2 (Transaction Database):} Một cơ sở dữ liệu giao dịch $D$ là tập hợp các giao dịch $T = \{T_1, T_2, ..., T_m\}$, trong đó mỗi giao dịch $T_i \subseteq I$ có một định danh duy nhất TID (Transaction ID).
+
+\textbf{Định nghĩa 2.3 (Support - Độ hỗ trợ):} Độ hỗ trợ của itemset $X$ được định nghĩa là tỷ lệ các giao dịch chứa $X$ trong $D$:
+\begin{equation}
+    Support(X) = \frac{|\{T \in D : X \subseteq T\}|}{|D|}
+\end{equation}
+
+\textbf{Định nghĩa 2.4 (Frequent Itemset - Tập phổ biến):} Một itemset $X$ được gọi là phổ biến nếu $Support(X) \geq min\_support$, với $min\_support$ là ngưỡng do người dùng định nghĩa.
+
+\textbf{Định nghĩa 2.5 (Association Rule - Luật kết hợp):} Một luật kết hợp có dạng $X \Rightarrow Y$, trong đó $X, Y \subseteq I$ và $X \cap Y = \emptyset$.
+
+\subsubsection{Các chỉ số đánh giá luật}
+
+\textbf{1. Confidence (Độ tin cậy):}
+\begin{equation}
+    Confidence(X \Rightarrow Y) = P(Y|X) = \frac{Support(X \cup Y)}{Support(X)}
+\end{equation}
+Ý nghĩa: Trong số các giao dịch chứa $X$, có bao nhiêu phần trăm cũng chứa $Y$.
+
+\textbf{2. Lift (Độ tương quan):}
+\begin{equation}
+    Lift(X \Rightarrow Y) = \frac{Support(X \cup Y)}{Support(X) \times Support(Y)}
+\end{equation}
+Ý nghĩa:
+\begin{itemize}
+    \item $Lift > 1$: $X$ và $Y$ có tương quan tích cực (xuất hiện cùng nhau nhiều hơn ngẫu nhiên)
+    \item $Lift = 1$: $X$ và $Y$ độc lập thống kê
+    \item $Lift < 1$: $X$ và $Y$ có tương quan âm
+\end{itemize}
+
+\subsection{Thuật toán Eclat}
+
+\subsubsection{Giới thiệu}
+
+Thuật toán \textbf{Eclat (Equivalence Class Clustering and bottom-up Lattice Traversal)} được Mohammed J. Zaki đề xuất năm 2000 \cite{zaki2000}. Đây là một trong những thuật toán hiệu quả nhất để khai phá tập phổ biến.
+
+\textbf{Đặc điểm nổi bật:}
+\begin{itemize}
+    \item Sử dụng \textbf{Vertical Data Format} thay vì Horizontal như Apriori
+    \item Chỉ cần \textbf{một lần quét} cơ sở dữ liệu
+    \item Sử dụng \textbf{Depth-First Search (DFS)} để duyệt không gian tìm kiếm
+    \item Tính Support bằng \textbf{phép giao TID-Sets}
+\end{itemize}
+
+\subsubsection{Định dạng dữ liệu dọc (Vertical Data Format)}
+
+Trong định dạng ngang (Horizontal), mỗi dòng là một giao dịch chứa danh sách các items:
+\begin{center}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{TID} & \textbf{Items} \\
+\hline
+1 & A, B, C \\
+2 & B, C, D \\
+3 & A, C, D \\
+\hline
+\end{tabular}
+\end{center}
+
+Trong định dạng dọc (Vertical), mỗi item được lưu kèm danh sách TID chứa item đó:
+\begin{center}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Item} & \textbf{TID-Set} \\
+\hline
+A & \{1, 3\} \\
+B & \{1, 2\} \\
+C & \{1, 2, 3\} \\
+D & \{2, 3\} \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Ưu điểm:} Để tính Support của itemset $\{A, C\}$, ta chỉ cần tính giao của TID-Sets:
+\begin{equation}
+    TID(A \cup C) = TID(A) \cap TID(C) = \{1, 3\} \cap \{1, 2, 3\} = \{1, 3\}
+\end{equation}
+Suy ra $Support(\{A, C\}) = |TID(A \cup C)| / |D| = 2/3 \approx 66.7\%$
+
+\subsubsection{Mã giả thuật toán Eclat}
+
+\begin{algorithm}[H]
+\caption{Thuật toán Eclat}
+\begin{algorithmic}[1]
+\Require Cơ sở dữ liệu $D$, ngưỡng $min\_support$
+\Ensure Tập hợp tất cả các Frequent Itemsets $F$
+
+\State $F \gets \emptyset$
+\State Chuyển đổi $D$ sang định dạng dọc: $TID\_Dict$
+\State Lọc các 1-itemsets có $Support < min\_support$
+
+\Procedure{Eclat\_Recursive}{$Prefix$, $TID\_Subset$}
+    \ForAll{$(item_i, tids_i) \in TID\_Subset$}
+        \State $NewItemset \gets Prefix \cup \{item_i\}$
+        \State $Support \gets |tids_i| / |D|$
+        \If{$Support \geq min\_support$}
+            \State $F \gets F \cup \{(NewItemset, Support)\}$
+        \EndIf
+        
+        \State $NewSubset \gets \emptyset$
+        \ForAll{$(item_j, tids_j) \in TID\_Subset$ \textbf{where} $j > i$}
+            \State $IntersectTids \gets tids_i \cap tids_j$ \Comment{Phép giao TID-Sets}
+            \If{$|IntersectTids| / |D| \geq min\_support$}
+                \State $NewSubset \gets NewSubset \cup \{(item_j, IntersectTids)\}$
+            \EndIf
+        \EndFor
+        
+        \If{$NewSubset \neq \emptyset$}
+            \State \Call{Eclat\_Recursive}{$NewItemset$, $NewSubset$}
+        \EndIf
+    \EndFor
+\EndProcedure
+
+\State \Call{Eclat\_Recursive}{$\emptyset$, $TID\_Dict$}
+\State \Return $F$
+\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Độ phức tạp thuật toán}
+
+\begin{itemize}
+    \item \textbf{Time Complexity:} $O(n \times m \times k)$
+    \begin{itemize}
+        \item $n$: Số lượng giao dịch
+        \item $m$: Số lượng items unique
+        \item $k$: Độ sâu tối đa của cây tìm kiếm
+    \end{itemize}
+    \item \textbf{Space Complexity:} $O(n \times m)$ cho việc lưu trữ TID-Sets
+\end{itemize}
+
+\subsection{So sánh Eclat với Apriori}
+
+\begin{table}[H]
+\centering
+\caption{So sánh giữa Apriori và Eclat}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Tiêu chí} & \textbf{Apriori} & \textbf{Eclat} \\
+\hline
+Định dạng dữ liệu & Horizontal & Vertical \\
+Số lần quét DB & Nhiều lần & 1 lần \\
+Chiến lược duyệt & BFS & DFS \\
+Tính Support & Đếm trực tiếp & Giao TID-Sets \\
+Bộ nhớ & Thấp & Cao hơn \\
+Tốc độ & Chậm hơn & Nhanh hơn \\
+\hline
+\end{tabular}
+\end{table}
+
+% ============================================================
+% CHƯƠNG 3: DỮ LIỆU VÀ TIỀN XỬ LÝ
+% ============================================================
+\section{Dữ liệu và tiền xử lý}
+
+\subsection{Giới thiệu bộ dữ liệu}
+
+Bộ dữ liệu \textbf{MSNBC.com Anonymous Web Data} được thu thập từ website msnbc.com vào ngày 28/09/1999 và được lưu trữ tại UCI Machine Learning Repository \cite{uci_msnbc}.
+
+\textbf{Thông tin tổng quan:}
+\begin{itemize}
+    \item \textbf{Số lượng phiên (sessions):} 989,818
+    \item \textbf{Số chuyên mục nội dung:} 17
+    \item \textbf{Trung bình số lần xem/phiên:} 5.7
+    \item \textbf{Định dạng file:} .seq (sequence)
+\end{itemize}
+
+\subsection{Cấu trúc dữ liệu}
+
+File dữ liệu \texttt{msnbc.seq} có cấu trúc:
+\begin{itemize}
+    \item Các dòng bắt đầu bằng \texttt{\%} là metadata (bỏ qua)
+    \item Mỗi dòng dữ liệu đại diện cho một phiên truy cập của người dùng
+    \item Các số từ 1-17 đại diện cho ID các chuyên mục
+\end{itemize}
+
+\subsection{Bảng ánh xạ chuyên mục}
+
+\begin{table}[H]
+\centering
+\caption{Ánh xạ ID sang tên chuyên mục}
+\begin{tabular}{|c|l|c|l|}
+\hline
+\textbf{ID} & \textbf{Tên gốc} & \textbf{ID} & \textbf{Tên gốc} \\
+\hline
+1 & Frontpage (Trang chủ) & 10 & Living (Đời sống) \\
+2 & News (Tin tức) & 11 & Business (Kinh doanh) \\
+3 & Tech (Công nghệ) & 12 & Sports (Thể thao) \\
+4 & Local (Địa phương) & 13 & Summary (Tóm tắt) \\
+5 & Opinion (Ý kiến) & 14 & BBS (Diễn đàn) \\
+6 & On-air (Phát sóng) & 15 & Travel (Du lịch) \\
+7 & Misc (Tổng hợp) & 16 & MSN-News (Tin MSN) \\
+8 & Weather (Thời tiết) & 17 & MSN-Sports (Thể thao MSN) \\
+9 & Health (Sức khỏe) & & \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Quy trình tiền xử lý}
+
+\begin{enumerate}
+    \item \textbf{Đọc file:} Bỏ qua các dòng metadata bắt đầu bằng \texttt{\%}
+    \item \textbf{Parse dữ liệu:} Tách các ID số theo khoảng trắng
+    \item \textbf{Ánh xạ:} Chuyển ID số sang tên chuyên mục
+    \item \textbf{Loại trùng lặp:} Dùng \texttt{set()} để loại các click trùng trong cùng phiên
+    \item \textbf{Lọc rỗng:} Loại bỏ các phiên không có dữ liệu hợp lệ
+\end{enumerate}
+
+\begin{lstlisting}[caption={Code tiền xử lý dữ liệu},label={lst:preprocess}]
+def load_data(filepath, limit=None):
+    dataset = []
+    with open(filepath, 'r') as f:
+        for line in f:
+            # Bo qua dong metadata
+            if line.startswith('%'):
+                continue
+            
+            # Tach cac ID so
+            item_ids = line.strip().split()
+            
+            # Chuyen sang set (loai trung lap)
+            transaction = set()
+            for item_id in item_ids:
+                if item_id in CATEGORY_NAMES:
+                    transaction.add(CATEGORY_NAMES[item_id])
+            
+            if transaction:
+                dataset.append(transaction)
+    
+    return dataset
+\end{lstlisting}
+
+% ============================================================
+% CHƯƠNG 4: TRIỂN KHAI THUẬT TOÁN
+% ============================================================
+\section{Triển khai thuật toán}
+
+\subsection{Kiến trúc hệ thống}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=1.5cm,
+    box/.style={rectangle, draw, minimum width=3cm, minimum height=1cm, align=center},
+    arrow/.style={->, thick}
+]
+    \node[box] (data) {data\_loader.py\\Đọc dữ liệu};
+    \node[box, right=of data] (eclat) {eclat\_algo.py\\Thuật toán Eclat};
+    \node[box, right=of eclat] (utils) {utils.py\\Sinh luật gợi ý};
+    \node[box, below=of eclat] (main) {main.py\\Điều phối};
+    
+    \draw[arrow] (data) -- (eclat);
+    \draw[arrow] (eclat) -- (utils);
+    \draw[arrow] (main) -- (data);
+    \draw[arrow] (main) -- (eclat);
+    \draw[arrow] (main) -- (utils);
+\end{tikzpicture}
+\caption{Kiến trúc hệ thống}
+\end{figure}
+
+\subsection{Module Eclat (eclat\_algo.py)}
+
+\subsubsection{Class Eclat}
+
+\begin{lstlisting}[caption={Cấu trúc class Eclat},label={lst:eclat_class}]
+class Eclat:
+    def __init__(self, min_support=0.01, min_items=1):
+        self.min_support = min_support
+        self.min_items = min_items
+        self.frequent_itemsets = []
+    
+    def fit(self, dataset):
+        # 1. Tinh nguong support
+        min_support_count = len(dataset) * self.min_support
+        
+        # 2. Chuyen sang Vertical Format
+        tid_dict = self._horizontal_to_vertical(dataset)
+        
+        # 3. Loc 1-itemsets khong du support
+        tid_dict = {k: v for k, v in tid_dict.items() 
+                    if len(v) >= min_support_count}
+        
+        # 4. De quy tim tap pho bien
+        self._eclat_recursive([], tid_dict, min_support_count)
+        
+        return self.frequent_itemsets
+\end{lstlisting}
+
+\subsubsection{Hàm đệ quy Eclat}
+
+\begin{lstlisting}[caption={Hàm đệ quy cốt lõi},label={lst:eclat_recursive}]
+def _eclat_recursive(self, prefix, tid_subset, min_support_count):
+    while tid_subset:
+        item, tids = tid_subset.pop(0)
+        new_itemset = prefix + [item]
+        
+        # Luu itemset neu du dieu kien
+        if len(new_itemset) >= self.min_items:
+            self.frequent_itemsets.append((new_itemset, len(tids)))
+        
+        # Tinh giao TID-Sets
+        new_tid_subset = []
+        for other_item, other_tids in tid_subset:
+            intersect_tids = tids & other_tids  # Phep giao
+            if len(intersect_tids) >= min_support_count:
+                new_tid_subset.append((other_item, intersect_tids))
+        
+        # De quy
+        if new_tid_subset:
+            self._eclat_recursive(new_itemset, new_tid_subset, 
+                                  min_support_count)
+\end{lstlisting}
+
+\subsection{Module sinh luật (utils.py)}
+
+\begin{lstlisting}[caption={Hàm sinh luật gợi ý},label={lst:generate_rules}]
+def generate_recommendation_rules(frequent_itemsets, total_transactions, 
+                                  min_confidence=0.5):
+    rules = []
+    
+    # Tao dictionary de tra cuu support
+    support_lookup = {tuple(sorted(items)): count 
+                      for items, count in frequent_itemsets}
+    
+    for itemset, support_count_AB in frequent_itemsets:
+        if len(itemset) < 2:
+            continue
+        
+        support_AB = support_count_AB / total_transactions
+        
+        for antecedent_item in itemset:
+            antecedent = [antecedent_item]
+            consequent = [x for x in itemset if x != antecedent_item]
+            
+            # Tinh Confidence va Lift
+            support_A = support_lookup.get(tuple(antecedent), 0) / total_transactions
+            support_B = support_lookup.get(tuple(sorted(consequent)), 0) / total_transactions
+            
+            confidence = support_AB / support_A if support_A > 0 else 0
+            lift = support_AB / (support_A * support_B) if support_A * support_B > 0 else 0
+            
+            if confidence >= min_confidence:
+                rules.append({
+                    'antecedent': antecedent,
+                    'consequent': consequent,
+                    'support': support_AB,
+                    'confidence': confidence,
+                    'lift': lift
+                })
+    
+    return sorted(rules, key=lambda x: x['lift'], reverse=True)
+\end{lstlisting}
+
+% ============================================================
+% CHƯƠNG 5: KẾT QUẢ VÀ ĐÁNH GIÁ
+% ============================================================
+\section{Kết quả và đánh giá}
+
+\subsection{Cấu hình thực nghiệm}
+
+\begin{itemize}
+    \item \textbf{Số phiên xử lý:} 989,818 (toàn bộ dữ liệu)
+    \item \textbf{Min Support:} 0.02 (2\%)
+    \item \textbf{Min Confidence:} 0.40 (40\%)
+\end{itemize}
+
+\subsection{Kết quả khai phá tập phổ biến}
+
+\begin{itemize}
+    \item Số 1-itemsets phổ biến: \textbf{15/17} chuyên mục
+    \item Số 2-itemsets phổ biến: \textbf{17} cặp
+    \item Tổng tập phổ biến: \textbf{32}
+\end{itemize}
+
+\textbf{Top 5 chuyên mục phổ biến nhất:}
+\begin{enumerate}
+    \item Trang chủ (Frontpage): 940,469 lượt xem
+    \item Tin tức (News): 452,387 lượt xem
+    \item Thời tiết (Weather): 439,398 lượt xem
+    \item Phát sóng (On-air): 414,928 lượt xem
+    \item Diễn đàn (BBS): 395,880 lượt xem
+\end{enumerate}
+
+\subsection{Kết quả sinh luật gợi ý}
+
+\begin{table}[H]
+\centering
+\caption{Top 5 luật gợi ý nội dung mạnh nhất}
+\begin{tabular}{|c|l|l|c|c|c|}
+\hline
+\textbf{STT} & \textbf{Nếu xem} & \textbf{Gợi ý} & \textbf{Support} & \textbf{Conf.} & \textbf{Lift} \\
+\hline
+1 & Tổng hợp & Phát sóng & 3.36\% & 41.3\% & \textbf{1.88} \\
+2 & Kinh doanh & Trang chủ & 3.31\% & 56.8\% & 1.80 \\
+3 & Đời sống & Trang chủ & 2.65\% & 51.9\% & 1.64 \\
+4 & Tổng hợp & Trang chủ & 3.68\% & 45.2\% & 1.43 \\
+5 & Tin tức & Trang chủ & 7.55\% & 42.6\% & 1.35 \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Phân tích kết quả}
+
+\textbf{Luật 1: Tổng hợp $\Rightarrow$ Phát sóng (Lift = 1.88)}
+\begin{itemize}
+    \item Ý nghĩa: Người xem mục Tổng hợp có xu hướng xem tiếp mục Phát sóng
+    \item Lift = 1.88 cho thấy xác suất cao hơn ngẫu nhiên \textbf{88\%}
+    \item Đây là luật có độ tương quan mạnh nhất
+\end{itemize}
+
+\textbf{Luật 2: Kinh doanh $\Rightarrow$ Trang chủ (Confidence = 56.8\%)}
+\begin{itemize}
+    \item Ý nghĩa: Hơn 56\% người xem Kinh doanh cũng xem Trang chủ
+    \item Đây là luật có Confidence cao nhất
+    \item Gợi ý: Nên đặt banner Trang chủ trong mục Kinh doanh
+\end{itemize}
+
+\subsection{Ứng dụng thực tế}
+
+Dựa trên kết quả phân tích, các gợi ý cho hệ thống:
+\begin{enumerate}
+    \item Hiển thị widget "Bạn có thể quan tâm" chứa nội dung Phát sóng khi người dùng đang xem Tổng hợp
+    \item Thêm link nhanh về Trang chủ trong các mục Kinh doanh, Đời sống, Tin tức
+    \item Tối ưu layout để tăng cross-navigation giữa các chuyên mục có Lift cao
+\end{enumerate}
+
+% ============================================================
+% CHƯƠNG 6: KẾT LUẬN
+% ============================================================
+\section{Kết luận}
+
+\subsection{Tổng kết}
+
+Đề tài đã hoàn thành các mục tiêu đề ra:
+\begin{itemize}
+    \item[$\checkmark$] Nghiên cứu và triển khai thành công thuật toán Eclat từ đầu
+    \item[$\checkmark$] Xử lý được gần 1 triệu phiên clickstream thực tế
+    \item[$\checkmark$] Sinh được các luật gợi ý có ý nghĩa thống kê (Lift > 1)
+    \item[$\checkmark$] Đánh giá hiệu quả bằng các chỉ số Support, Confidence, Lift
+\end{itemize}
+
+\subsection{Hạn chế}
+
+\begin{itemize}
+    \item Dữ liệu từ năm 1999, có thể không phản ánh hành vi người dùng hiện đại
+    \item Chỉ xét các cặp 2 chuyên mục, chưa mở rộng cho n-itemsets với n > 2
+    \item Chưa triển khai giao diện web để demo trực quan
+\end{itemize}
+
+\subsection{Hướng phát triển}
+
+\begin{itemize}
+    \item Tích hợp với hệ thống gợi ý real-time
+    \item Mở rộng phân tích sequence (thứ tự click) bằng thuật toán GSP, PrefixSpan
+    \item Kết hợp với các thuật toán Machine Learning khác (Collaborative Filtering)
+    \item Xây dựng API và giao diện web demo
+\end{itemize}
+
+% ============================================================
+% TÀI LIỆU THAM KHẢO
+% ============================================================
+\begin{thebibliography}{9}
+
+\bibitem{zaki2000}
+Zaki, M. J. (2000). 
+\textit{Scalable Algorithms for Association Mining}. 
+IEEE Transactions on Knowledge and Data Engineering, 12(3), 372-390.
+
+\bibitem{han2011}
+Han, J., Kamber, M., \& Pei, J. (2011). 
+\textit{Data Mining: Concepts and Techniques} (3rd ed.). 
+Morgan Kaufmann Publishers.
+
+\bibitem{zaki2014}
+Zaki, M. J., \& Meira Jr, W. (2014). 
+\textit{Data Mining and Analysis: Fundamental Concepts and Algorithms}. 
+Cambridge University Press.
+
+\bibitem{agrawal1993}
+Agrawal, R., Imielinski, T., \& Swami, A. (1993). 
+\textit{Mining Association Rules Between Sets of Items in Large Databases}. 
+Proceedings of the 1993 ACM SIGMOD International Conference on Management of Data.
+
+\bibitem{uci_msnbc}
+UCI Machine Learning Repository. 
+\textit{MSNBC.com Anonymous Web Data Data Set}. 
+\url{https://archive.ics.uci.edu/dataset/133/msnbc+com+anonymous+web+data}
+
+\end{thebibliography}
+
+% ============================================================
+% PHỤ LỤC
+% ============================================================
+\appendix
+\section{Phụ lục: Cấu trúc thư mục dự án}
+
+\begin{verbatim}
+Eclat_Project/
+|-- data/
+|   +-- raw/
+|       +-- msnbc.seq           # Du lieu goc tu UCI
+|-- docs/
+|   |-- baocao.tex              # File bao cao nay
+|   +-- *.pdf                   # Tai lieu tham khao
+|-- src/
+|   |-- data_loader.py          # Module doc du lieu
+|   |-- eclat_algo.py           # Thuat toan Eclat
+|   +-- utils.py                # Sinh luat va hien thi
+|-- main.py                     # File dieu phoi chinh
+|-- requirements.txt
++-- README.md
+\end{verbatim}
+
+\end{document}
