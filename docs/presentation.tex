@@ -1,0 +1,763 @@
+    \documentclass[10pt]{beamer}
+
+    % Cấu hình theme
+    \usetheme{Madrid}
+    \usecolortheme{default}
+    \usefonttheme{professionalfonts} % Sử dụng font chuyên nghiệp hơn
+    \setbeamerfont{caption}{size=\scriptsize}
+
+    % Gói hỗ trợ tiếng Việt và các gói khác
+    \usepackage[utf8]{vietnam}
+    \usepackage[utf8]{inputenc}
+    \usepackage[T5]{fontenc}
+    \usepackage{lmodern} % Font Latin Modern sắc nét hơn
+    \usepackage[scaled]{helvet} % Dùng font Helvetica (giống Arial) làm font chính
+    \renewcommand{\familydefault}{\sfdefault} % Chắc chắn dùng sans-serif
+
+    \usepackage{bookmark}
+    \usepackage{graphicx}
+    \usepackage{booktabs}
+    \usepackage{algorithm}
+    \usepackage{algpseudocode}
+    \usepackage{listings}
+    \usepackage{xcolor}
+    \usepackage{tikz}
+    \usepackage{multirow}
+    \usepackage{array}
+    \usetikzlibrary{shapes,arrows,positioning,fit,calc}
+
+    % Cấu hình code block đẹp hơn
+    \usepackage{inconsolata} % Font code đẹp hơn (nếu có hỗ trợ) hoặc dùng basic tt
+    \lstset{
+        language=Python,
+        basicstyle=\ttfamily\scriptsize, % Tăng size lên xíu cho dễ nhìn
+        keywordstyle=\color{blue}\bfseries,
+        commentstyle=\color{green!50!black}\itshape, % Comment in nghiêng, màu dịu hơn
+        stringstyle=\color{orange!80!black},
+        identifierstyle=\color{black},
+        breaklines=true,
+        frame=shadowbox, % Khung bóng đổ đẹp hơn
+        rulesepcolor=\color{gray},
+        showstringspaces=false,
+        numbers=left,
+        numberstyle=\tiny\color{gray},
+        numbersep=5pt,
+        tabsize=4,
+        backgroundcolor=\color{yellow!5}, % Nền code màu nhạt dễ đọc
+        escapeinside={(*@}{@*)}
+    }
+
+    % Định nghĩa lại tên thuật toán
+    \floatname{algorithm}{Thuật toán}
+    \renewcommand{\algorithmicrequire}{\textbf{Input:}}
+    \renewcommand{\algorithmicensure}{\textbf{Output:}}
+
+    % --- ĐỊNH NGHĨA TRANG BÌA CUSTOM ---
+% --- ĐỊNH NGHĨA TRANG BÌA CUSTOM (MINIMALIST WHITE) ---
+    \setbeamertemplate{title page}{
+        \begin{tikzpicture}[remember picture,overlay]
+            % Thanh màu xanh mỏng ở trên cùng
+            \fill[structure.fg] (current page.north west) rectangle ([yshift=-0.2cm]current page.north east);
+        \end{tikzpicture}
+        
+        \vspace{1.5cm}
+        
+        % Dòng tên trường
+        {\tiny\bfseries\color{structure.fg!80} TRƯỜNG ĐẠI HỌC XÂY DỰNG HÀ NỘI \\ KHOA CÔNG NGHỆ THÔNG TIN \par}
+        
+        \vspace{0.5cm}
+        
+        % Tiêu đề chính (Font Serif to, đậm - Đã giảm size theo yêu cầu)
+        {\usefont{T5}{put}{b}{n}\fontsize{16}{22}\selectfont\textcolor{black}{Ứng dụng thuật toán Eclat trong phân tích hành vi người dùng qua dữ liệu clickstream để gợi ý nội dung}\par}
+        
+        \vspace{0.3cm}
+        
+        % Subtitle
+        {\color{gray} Báo cáo Bài tập lớn môn Khai phá dữ liệu \par}
+        
+        \vspace{1.5cm} 
+        
+        % Cột thông tin (Giảng viên & Sinh viên)
+        \begin{columns}[t]
+            \column{0.45\textwidth}
+                {\scriptsize\bfseries\color{structure.fg} GIẢNG VIÊN HƯỚNG DẪN}\\[0.1cm]
+                {\large\bfseries TS. Phạm Hồng Phong}
+                
+            \column{0.55\textwidth}
+                {\scriptsize\bfseries\color{structure.fg} NHÓM THỰC HIỆN}\\[0.1cm]
+                {\small
+                1. Nguyễn Việt Anh (0203968)\\
+                2. Nguyễn Việt Hùng (0208768)\\
+                3. Đỗ Quang Hợp (0208568)
+                }
+        \end{columns}
+        
+        \vfill
+    }
+
+    % Thông tin Metadata
+    \title[Thuật toán Eclat]{Ứng dụng thuật toán Eclat trong phân tích hành vi\\người dùng qua dữ liệu clickstream để gợi ý nội dung}
+
+    \author[Việt Anh - Việt Hùng - Quang Hợp]{
+        Nguyễn Việt Anh \and Nguyễn Việt Hùng \and Đỗ Quang Hợp
+    }
+    \institute[ĐH Xây Dựng HN]{
+        Khoa Công nghệ Thông tin \\
+        Trường Đại học Xây Dựng Hà Nội
+    }
+    \date{Tháng 2 năm 2026}
+
+    \begin{document}
+
+    % Slide 1: Trang bìa
+    \begin{frame}
+        \titlepage
+    \end{frame}
+
+    % Slide 2: Mục lục
+    \begin{frame}{Nội dung trình bày}
+        \tableofcontents
+    \end{frame}
+
+    % ============================================================
+    % 1. TỔNG QUAN
+    % ============================================================
+    \section{Tổng quan đề tài}
+
+    \begin{frame}{Đặt vấn đề}
+        \textbf{Bối cảnh thực tế:}
+        \begin{itemize}
+            \item Sự bùng nổ của Internet $\rightarrow$ Website/Ứng dụng tạo ra lượng dữ liệu \textbf{clickstream} khổng lồ.
+            \item Clickstream ghi lại toàn bộ lịch sử thao tác: Trang đã xem, thời gian xem, thứ tự click...
+        \end{itemize}
+        
+        \vspace{0.3cm}
+        \textbf{Vấn đề cần giải quyết:}
+        \begin{itemize}
+            \item Làm sao hiểu được hành vi và sở thích người dùng từ "đống" log hỗn độn?
+            \item Làm sao để biết: "Người đọc tin Thể thao thường quan tâm tin gì tiếp theo?"
+        \end{itemize}
+        
+        \vspace{0.3cm}
+        \textbf{Giải pháp:}
+        \begin{itemize}
+            \item Sử dụng \textbf{Khai phá luật kết hợp (Association Rule Mining)}.
+            \item Kỹ thuật này giúp tìm ra các mối quan hệ ẩn: $X \Rightarrow Y$.
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}{Mục tiêu đề tài}
+        Đề tài tập trung vào 4 mục tiêu chính:
+        \begin{enumerate}
+            \item \textbf{Nghiên cứu thuật toán}: Tìm hiểu sâu và triển khai thuật toán \textbf{Eclat} từ đầu (from scratch), không dùng thư viện có sẵn.
+            \item \textbf{Xử lý dữ liệu thực}: Áp dụng thuật toán trên bộ dữ liệu \textbf{MSNBC.com Anonymous Web Data} (gần 1 triệu giao dịch).
+            \item \textbf{Sinh luật gợi ý}: Tạo ra các luật dạng "Nếu xem A $\rightarrow$ Gợi ý B".
+            \item \textbf{Đánh giá}: Phân tích hiệu quả các luật dựa trên các chỉ số Support, Confidence, Lift.
+        \end{enumerate}
+    \end{frame}
+
+    \begin{frame}{Phạm vi nghiên cứu}
+        \begin{itemize}
+            \item \textbf{Dữ liệu đầu vào}: 
+            \begin{itemize}
+                \item Nguồn: UCI Machine Learning Repository.
+                \item Dữ liệu: Clickstream từ trang tin tức MSNBC.com.
+                \item Kích thước: 989,818 phiên truy cập.
+            \end{itemize}
+            
+            \item \textbf{Thuật toán}: 
+            \begin{itemize}
+                \item Tập trung duy nhất vào \textbf{Eclat (Equivalence Class Transformation)}.
+                \item So sánh lý thuyết với Apriori.
+            \end{itemize}
+            
+            \item \textbf{Công nghệ}:
+            \begin{itemize}
+                \item Ngôn ngữ: Python 3.x.
+                \item Cách tiếp cận: Tự cài đặt cấu trúc dữ liệu và giải thuật.
+            \end{itemize}
+        \end{itemize}
+    \end{frame}
+
+    % ============================================================
+    % 2. CƠ SỞ LÝ THUYẾT
+    % ============================================================
+    \section{Cơ sở lý thuyết}
+
+    \begin{frame}{1. Các khái niệm cơ bản (1)}
+        \begin{block}{Tập mục (Itemset)}
+            Cho $I = \{i_1, i_2, ..., i_n\}$ là tập hợp các mặt hàng.
+            \begin{itemize}
+                \item \textbf{Itemset} $X$ là một tập con của $I$ ($X \subseteq I$).
+                \item \textbf{k-itemset}: Itemset có kích thước $k$.
+                \item \textit{Ví dụ:} $I = \{A, B, C, D\}$, $X = \{A, C\}$ là 2-itemset.
+            \end{itemize}
+        \end{block}
+
+        \begin{block}{Cơ sở dữ liệu giao dịch (Transaction Database)}
+            CSDL $D$ gồm các giao dịch $T = \{T_1, T_2, ..., T_m\}$.
+            \begin{itemize}
+                \item Mỗi giao dịch $T_j \subseteq I$ có một định danh duy nhất (TID).
+                \item $T_j$ chứa các mục được mua cùng nhau trong một thời điểm.
+            \end{itemize}
+        \end{block}
+    \end{frame}
+
+    \begin{frame}{2. Các khái niệm cơ bản (2)}
+        \begin{alertblock}{Độ hỗ trợ (Support)}
+            Tỷ lệ (xác suất) xuất hiện của itemset $X$ trong CSDL $D$.
+            \[ Support(X) = \frac{|\{T \in D \mid X \subseteq T\}|}{|D|} \in [0, 1] \]
+        \end{alertblock}
+
+        \begin{exampleblock}{Tập phổ biến (Frequent Itemset)}
+            Itemset $X$ được gọi là \textbf{phổ biến} nếu độ hỗ trợ của nó không nhỏ hơn một ngưỡng tối thiểu do người dùng quy định ($min\_support$).
+            \[ Support(X) \geq min\_support \]
+        \end{exampleblock}
+        
+        \vspace{0.5cm}
+        \textbf{Mục tiêu của thuật toán}: Tìm tất cả các tập phổ biến trong $D$.
+    \end{frame}
+
+    \begin{frame}{3. Các khái niệm cơ bản (3)}
+        \begin{block}{Luật kết hợp (Association Rule)}
+            Có dạng $X \Rightarrow Y$, trong đó $X, Y \subseteq I$ và $X \cap Y = \emptyset$.
+            \\ \textit{Ý nghĩa:} "Nếu mua $X$ thì có khả năng sẽ mua thêm $Y$".
+        \end{block}
+
+        \begin{columns}[t]
+            \column{0.48\textwidth}
+                \begin{block}{Độ tin cậy (Confidence)}
+                    Độ chắc chắn của luật:
+                    \[ Conf(X \Rightarrow Y) = \frac{Sup(X \cup Y)}{Sup(X)} \]
+                    (Xác suất có điều kiện $P(Y|X)$)
+                \end{block}
+            
+            \column{0.48\textwidth}
+                \begin{block}{Độ tương quan (Lift)}
+                    Độ tương quan giữa X và Y:
+                    \[ Lift(X \Rightarrow Y) = \frac{Conf(X \Rightarrow Y)}{Sup(Y)} \]
+                    \begin{itemize}
+                        \item $>1$: Tương quan dương (Tốt)
+                        \item $=1$: Độc lập (Không tốt)
+                        \item $<1$: Tương quan âm
+                    \end{itemize}
+                \end{block}
+        \end{columns}
+    \end{frame}
+
+    \begin{frame}{Ví dụ minh họa (Theo Báo cáo)}
+        \textbf{CSDL Giao dịch ($|D|=5$):}
+        \begin{table}
+        \centering\small
+        \begin{tabular}{|c|l|}
+        \hline \textbf{TID} & \textbf{Items} \\ \hline
+        T1 & Bánh mì, Sữa, Bơ \\
+        T2 & Bánh mì, Sữa \\
+        T3 & Sữa, Bơ \\
+        T4 & Bánh mì, Bơ \\
+        T5 & Bánh mì, Sữa, Bơ \\ \hline
+        \end{tabular}
+        \end{table}
+
+        \textbf{Xét luật: \{Bánh mì\} $\Rightarrow$ \{Sữa\}} ("Mua Bánh mì thì mua Sữa")
+        \begin{columns}[t]
+            \column{0.5\textwidth}
+                \begin{itemize}
+                    \item $Sup(\text{Bánh mì}) = 4/5 = 80\%$
+                    \item $Sup(\text{Sữa}) = 4/5 = 80\%$
+                    \item $Sup(\text{Bánh mì} \cup \text{Sữa}) = 3/5 = 60\%$
+                \end{itemize}
+            
+            \column{0.5\textwidth}
+                \textbf{Đánh giá:}
+                \begin{itemize}
+                    \item \textbf{Confidence}: $\frac{60\%}{80\%} = 75\%$ (Khá cao)
+                    \item \textbf{Lift}: $\frac{60\%}{80\% \times 80\%} = 0.9375 < 1$
+                \end{itemize}
+        \end{columns}
+        \vspace{0.2cm}
+        \textit{Kết luận:} Dù Confidence cao nhưng Lift < 1 $\rightarrow$ Tương quan âm (không tốt để gợi ý).
+    \end{frame}
+
+    \begin{frame}{Thuật toán Eclat: Giới thiệu}
+        \begin{alertblock}{Định nghĩa}
+            \textbf{Eclat} (\textbf{E}quivalence \textbf{C}lass \textbf{C}lustering and bottom-up \textbf{La}ttice \textbf{T}raversal)
+            \begin{itemize}
+                \item Đề xuất bởi: \textbf{Mohammed J. Zaki} (2000).
+                \item Là thuật toán khai phá tập phổ biến dựa trên hướng tiếp cận \textbf{DFS (Depth-First Search)}.
+            \end{itemize}
+        \end{alertblock}
+        
+        \vspace{0.5cm}
+        \textbf{Ưu điểm vượt trội so với Apriori:}
+        \begin{enumerate}
+            \item \textbf{Chỉ quét CSDL một lần duy nhất}: Để chuyển đổi dữ liệu sang định dạng dọc (Vertical Format).
+            \item \textbf{Không cần sinh ứng viên (No Candidate Generation)}: Tránh việc tạo ra số lượng lớn itemset thừa.
+            \item \textbf{Tính toán Support nhanh}: Sử dụng phép giao tập hợp (Intersection) các TID-Set (nhanh hơn nhiều so với việc đếm pattern matching).
+        \end{enumerate}
+    \end{frame}
+
+    \begin{frame}{Horizontal vs Vertical Format}
+        \begin{columns}
+            \begin{column}{0.48\textwidth}
+                \textbf{Horizontal (Truyền thống)}
+                \begin{table}
+                \centering\scriptsize
+                \begin{tabular}{|c|l|}
+                \hline TID & Items \\ \hline
+                1 & A, B, D \\
+                2 & B, C \\
+                3 & A, B, C \\
+                \hline
+                \end{tabular}
+                \end{table}
+                \begin{itemize}
+                    \item Dễ lưu trữ tự nhiên.
+                    \item Tính support phải scan toàn bộ.
+                \end{itemize}
+            \end{column}
+            \begin{column}{0.48\textwidth}
+                \textbf{Vertical (Eclat)}
+                \begin{table}
+                \centering\scriptsize
+                \begin{tabular}{|c|l|}
+                \hline Item & TID-Set \\ \hline
+                A & \{1, 3\} \\
+                B & \{1, 2, 3\} \\
+                C & \{2, 3\} \\
+                D & \{1\} \\
+                \hline
+                \end{tabular}
+                \end{table}
+                \begin{itemize}
+                    \item Map: Item $\rightarrow$ List of TIDs.
+                    \item Support = Size of TID-Set.
+                \end{itemize}
+            \end{column}
+        \end{columns}
+    \end{frame}
+
+    \begin{frame}{Nguyên lý hoạt động của Eclat}
+        \textbf{Nguyên lý cốt lõi:}
+        \[ TID(X \cup Y) = TID(X) \cap TID(Y) \]
+        
+        \vspace{0.3cm}
+        \textbf{Ý nghĩa:}
+        \begin{itemize}
+            \item Danh sách giao dịch chứa cả $X$ và $Y$ chính là giao của danh sách chứa $X$ và danh sách chứa $Y$.
+            \item Support của tập mới = Kích thước tập giao này.
+        \end{itemize}
+        
+        \vspace{0.3cm}
+        \textbf{Quy trình đệ quy (DFS):}
+        \begin{itemize}
+            \item Từ các items đơn lẻ (1-itemsets), giao chúng để tạo 2-itemsets.
+            \item Từ 2-itemsets, giao tiếp để tạo 3-itemsets...
+            \item Dừng khi tập giao rỗng hoặc không đủ min\_support.
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}[fragile]{Mã giả thuật toán Eclat}
+        \begin{algorithmic}[1]
+            \Procedure{Eclat\_Recursive}{$Prefix, TID\_Subset, min\_sup$}
+                \While{$TID\_Subset \neq \emptyset$}
+                    \State $(item, tids) \gets POP(TID\_Subset)$
+                    \State $NewItemset \gets Prefix \cup \{item\}$
+                    \State \textbf{Output} $(NewItemset, |tids|)$
+                    
+                    \State $NewSubset \gets \emptyset$
+                    \ForAll{$(other, other\_tids) \in TID\_Subset$}
+                        \State $Intersect \gets tids \cap other\_tids$ \Comment{Phép giao}
+                        \If{$|Intersect| \geq min\_sup$}
+                            \State $ADD(NewSubset, (other, Intersect))$
+                        \EndIf
+                    \EndFor
+                    
+                    \If{$NewSubset \neq \emptyset$}
+                        \State \Call{Eclat\_Recursive}{$NewItemset, NewSubset, min\_sup$}
+                    \EndIf
+                \EndWhile
+            \EndProcedure
+        \end{algorithmic}
+    \end{frame}
+
+    \begin{frame}{Ví dụ chạy tay Eclat: Bước 1 (Input)}
+        \textbf{Input DB:}
+        \begin{itemize}
+            \item T1: A, B, C
+            \item T2: A, B
+            \item T3: A, C
+        \end{itemize}
+        \textbf{Min Support = 2}
+        
+        \vspace{0.5cm}
+        \textbf{Chuyển đổi sang Vertical:}
+        \begin{itemize}
+            \item A: \{1, 2, 3\} (Supp=3) $\rightarrow$ Giữ
+            \item B: \{1, 2\} (Supp=2) $\rightarrow$ Giữ
+            \item C: \{1, 3\} (Supp=2) $\rightarrow$ Giữ
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}{Ví dụ chạy tay Eclat: Bước 2 (Giao 2-itemsets)}
+        Duyệt danh sách items $\{A, B, C\}$:
+        
+        \vspace{0.3cm}
+        \textbf{1. Xét A (với B, C):}
+        \begin{itemize}
+            \item $TID(A \cap B) = \{1, 2, 3\} \cap \{1, 2\} = \{1, 2\}$. Count = 2 $\ge$ 2.
+            \item $\rightarrow$ \textbf{\{A, B\} là tập phổ biến}.
+            \item $TID(A \cap C) = \{1, 2, 3\} \cap \{1, 3\} = \{1, 3\}$. Count = 2 $\ge$ 2.
+            \item $\rightarrow$ \textbf{\{A, C\} là tập phổ biến}.
+        \end{itemize}
+        
+        \vspace{0.3cm}
+        \textbf{2. Xét B (với C):} (Sau khi đã xét A xong)
+        \begin{itemize}
+            \item $TID(B \cap C) = \{1, 2\} \cap \{1, 3\} = \{1\}$. Count = 1 < 2.
+            \item $\rightarrow$ Loại.
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}{Ví dụ chạy tay Eclat: Bước 3 (3-itemsets)}
+        \textbf{Đệ quy tiếp từ nhánh của A:}
+        \begin{itemize}
+            \item Ta có tập con sinh ra từ A là: $\{(B, \{1,2\}), (C, \{1,3\})\}$
+            \item Giao tiếp B và C trong nhánh này:
+            \item $TID(A \cap B \cap C) = \{1, 2\} \cap \{1, 3\} = \{1\}$.
+            \item Count = 1 < 2 $\rightarrow$ Dừng.
+        \end{itemize}
+        
+        \vspace{0.5cm}
+        \textbf{Kết quả cuối cùng:}
+        \begin{itemize}
+            \item \{A\}, \{B\}, \{C\}
+            \item \{A, B\}, \{A, C\}
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}{So sánh Apriori và Eclat}
+        \begin{table}
+        \centering\small
+        \begin{tabular}{|l|p{4cm}|p{4cm}|}
+            \hline
+            \textbf{Tiêu chí} & \textbf{Apriori} & \textbf{Eclat} \\
+            \hline
+            \textbf{Cấu trúc} & Horizontal & \textbf{Vertical} \\
+            \hline
+            \textbf{Quét DB} & Nhiều lần (k lần) & \textbf{1 lần} (Tiền xử lý) \\
+            \hline
+            \textbf{Duyệt} & BFS (Chiều rộng) & \textbf{DFS (Chiều sâu)} \\
+            \hline
+            \textbf{Tính Support} & Đếm pattern matching & \textbf{Phép giao TID} (Rất nhanh) \\
+            \hline
+            \textbf{Bộ nhớ} & Thấp & \textbf{Cao hơn} (Lưu TID lists) \\
+            \hline
+            \textbf{Hiệu năng} & Chậm với dữ liệu lớn & \textbf{Nhanh hơn đáng kể} \\
+            \hline
+        \end{tabular}
+        \end{table}
+    \end{frame}
+
+    % ============================================================
+    % 3. DỮ LIỆU & TIỀN XỬ LÝ
+    % ============================================================
+    \section{Dữ liệu và Tiền xử lý}
+
+    \begin{frame}{Giới thiệu bộ dữ liệu MSNBC}
+        \textbf{Nguồn gốc:}
+        \begin{itemize}
+            \item UCI Machine Learning Repository (1999).
+            \item Log truy cập của người dùng trên trang tin tức MSNBC.com.
+        \end{itemize}
+        
+        \vspace{0.3cm}
+        \textbf{Thống kê:}
+        \begin{itemize}
+            \item Tổng số phiên (sessions): \textbf{989,818} (Gần 1 triệu).
+            \item Số chuyên mục (items): \textbf{17}.
+            \item Trung bình click/phiên: 5.7.
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}{Cấu trúc và Ánh xạ dữ liệu}
+        \textbf{File gốc (.seq):}
+        \begin{itemize}
+            \item Mỗi dòng là một danh sách các số nguyên.
+            \item Ví dụ: \texttt{1 1 5 1 2} (Người dùng xem: Frontpage $\rightarrow$ Frontpage $\rightarrow$ Opinion $\rightarrow$ Frontpage $\rightarrow$ News).
+        \end{itemize}
+
+        \vspace{0.3cm}
+        \textbf{Bảng ánh xạ (Mapping):}
+        \begin{table}
+        \centering\tiny
+        \begin{tabular}{|c|l|c|l|}
+        \hline ID & Tên mục & ID & Tên mục \\ \hline
+        1 & Frontpage (Trang chủ) & 10 & Living (Đời sống)\\
+        2 & News (Tin tức) & 11 & Business (Kinh doanh)\\
+        3 & Tech (Công nghệ) & 12 & Sports (Thể thao)\\
+        4 & Local (Địa phương) & 13 & Summary (Tóm tắt)\\
+        5 & Opinion (Ý kiến) & 14 & BBS (Diễn đàn)\\
+        6 & On-air (Phát sóng) & ... & ...\\
+        \hline
+        \end{tabular}
+        \end{table}
+    \end{frame}
+
+    \begin{frame}{Quy trình tiền xử lý}
+        \begin{enumerate}
+            \item \textbf{Load Data}: Đọc file từng dòng, bỏ qua metadata (các dòng bắt đầu bằng \%).
+            \item \textbf{Split}: Tách chuỗi số thành list các ID.
+            \item \textbf{Mapping}: Chuyển đổi ID số $\rightarrow$ Tên chuyên mục (String).
+            \item \textbf{Deduplicate}: Sử dụng \texttt{set()} để loại bỏ các lần xem trùng lặp trong cùng 1 phiên. 
+            \begin{itemize}
+                \item Lý do: Eclat quan tâm "CÓ xem hay KHÔNG", không quan tâm xem bao nhiêu lần.
+            \end{itemize}
+            \item \textbf{Filter}: Loại bỏ các phiên rỗng.
+        \end{enumerate}
+    \end{frame}
+
+    \begin{frame}[fragile]{Code tiền xử lý (Python)}
+        \begin{lstlisting}
+        def load_data(filepath):
+            dataset = []
+            with open(filepath, 'r') as f:
+                for line in f:
+                    # Bo qua metadata
+                    if not line or line.startswith('%'):
+                        continue
+                    
+                    item_ids = line.strip().split()
+                    
+                    # Loai bo trung lap bang set
+                    transaction = set()
+                    for item_id in item_ids:
+                        if item_id in CATEGORY_NAMES:
+                            transaction.add(CATEGORY_NAMES[item_id])
+                    
+                    if transaction:
+                        dataset.append(transaction)
+            return dataset
+        \end{lstlisting}
+    \end{frame}
+
+    % ============================================================
+    % 4. TRIỂN KHAI
+    % ============================================================
+    \section{Triển khai thuật toán}
+
+    \begin{frame}{Kiến trúc chương trình}
+        Chương trình được chia thành 3 modules chính:
+        
+        \vspace{0.5cm}
+        \centering
+        \begin{tikzpicture}[
+            node distance=0.8cm,
+            box/.style={rectangle, draw, fill=blue!10, minimum width=3cm, minimum height=1cm, align=center, rounded corners},
+            arrow/.style={->, thick, >=stealth}
+        ]
+            \node[box] (main) {main.py\\(Điều phối)};
+            \node[box, below left=of main] (data) {data\_loader.py\\(Xử lý dữ liệu)};
+            \node[box, below=of main] (algo) {eclat\_algo.py\\(Lõi thuật toán)};
+            \node[box, below right=of main] (utils) {utils.py\\(Sinh luật)};
+            
+            \draw[arrow] (main) -- (data);
+            \draw[arrow] (main) -- (algo);
+            \draw[arrow] (main) -- (utils);
+            \draw[arrow] (data) -- (algo) node[midway, below, font=\tiny] {Dataset};
+            \draw[arrow] (algo) -- (utils) node[midway, below, font=\tiny] {Itemsets};
+        \end{tikzpicture}
+    \end{frame}
+
+    \begin{frame}[fragile]{Module Eclat: Khởi tạo \& Fit}
+        \begin{lstlisting}
+    class Eclat:
+        def __init__(self, min_support=0.01, min_items=1):
+            self.min_support = min_support
+            self.frequent_itemsets = []
+
+        def fit(self, dataset):
+            self._total_trans = len(dataset)
+            min_supp_count = self._total_trans * self.min_support
+            
+            # 1. Chuyen sang Vertical Format
+            tid_dict = {}
+            for tid, trans in enumerate(dataset):
+                for item in trans:
+                    if item not in tid_dict: tid_dict[item] = set()
+                    tid_dict[item].add(tid)
+            
+            # 2. Loc & Sap xep
+            tid_dict = {k: v for k, v in tid_dict.items() 
+                        if len(v) >= min_supp_count}
+            sorted_items = sorted(tid_dict.items(), 
+                                key=lambda x: len(x[1]), reverse=True)
+                                
+            # 3. Goi de quy
+            self._eclat_recursive([], sorted_items, min_supp_count)
+        \end{lstlisting}
+    \end{frame}
+
+    \begin{frame}[fragile]{Module Eclat: Hàm Đệ quy (Core)}
+        \begin{lstlisting}
+        def _eclat_recursive(self, prefix, tid_subset, min_supp_count):
+            while tid_subset:
+                item, tids = tid_subset.pop(0)
+                new_itemset = prefix + [item]
+                
+                # Luu ket qua
+                self.frequent_itemsets.append((new_itemset, len(tids)))
+                
+                # Tao nhanh moi
+                new_tid_subset = []
+                for other_item, other_tids in tid_subset:
+                    # PHEP GIAO QUAN TRONG NHAT
+                    intersect = tids & other_tids
+                    
+                    if len(intersect) >= min_supp_count:
+                        new_tid_subset.append((other_item, intersect))
+                
+                # De quy
+                if new_tid_subset:
+                    self._eclat_recursive(new_itemset, new_tid_subset, min_supp_count)
+        \end{lstlisting}
+    \end{frame}
+
+    \begin{frame}[fragile]{Module Utils: Sinh luật gợi ý}
+        Logic sinh luật từ tập phổ biến:
+        \begin{itemize}
+            \item Duyệt qua các frequent itemsets có kích thước $\ge 2$.
+            \item Với mỗi itemset $I$, tạo luật $A \Rightarrow B$ (với $A \subset I, B = I \setminus A$).
+            \item Tính Confidence và Lift. Nếu đạt ngưỡng $\rightarrow$ Lưu.
+        \end{itemize}
+
+        \begin{lstlisting}
+        # Tinh Confidence
+        supp_AB = count_AB / total
+        supp_A = lookup[A] / total
+        confidence = supp_AB / supp_A
+        
+        # Tinh Lift
+        supp_B = lookup[B] / total
+        lift = supp_AB / (supp_A * supp_B)
+        \end{lstlisting}
+    \end{frame}
+
+    % ============================================================
+    % 5. KẾT QUẢ
+    % ============================================================
+    \section{Kết quả thực nghiệm}
+
+    \begin{frame}{Cấu hình thực nghiệm}
+        Chúng tôi chạy thực nghiệm trên toàn bộ dữ liệu MSNBC với cấu hình:
+        
+        \begin{alertblock}{Tham số}
+            \begin{itemize}
+                \item \textbf{Min Support}: $2\%$ (0.02)
+                \begin{itemize}
+                    \item Tương đương: Itemset phải xuất hiện trong ít nhất $\approx 20,000$ phiên.
+                \end{itemize}
+                \item \textbf{Min Confidence}: $40\%$ (0.4)
+                \begin{itemize}
+                    \item Tương đương: Nếu xem A, phải có ít nhất 40\% khả năng xem B.
+                \end{itemize}
+            \end{itemize}
+        \end{alertblock}
+    \end{frame}
+
+    \begin{frame}{Kết quả tổng quan}
+        \textbf{Tập phổ biến (Frequent Itemsets):}
+        \begin{itemize}
+            \item Tìm thấy tổng cộng: \textbf{32} itemsets phổ biến.
+            \item 15/17 chuyên mục thỏa mãn min\_support (1-itemsets).
+            \item 17 cặp chuyên mục thỏa mãn min\_support (2-itemsets).
+        \end{itemize}
+
+        \vspace{0.3cm}
+        \textbf{Top 3 Chuyên mục được xem nhiều nhất:}
+        \begin{enumerate}
+            \item \textbf{Frontpage} (Trang chủ): 940k lượt (95\% sessions).
+            \item \textbf{News} (Tin tức): 452k lượt.
+            \item \textbf{Weather} (Thời tiết): 439k lượt.
+        \end{enumerate}
+    \end{frame}
+
+    \begin{frame}{Các luật gợi ý tiêu biểu (Strongest Rules)}
+        Bảng dưới đây hiển thị các luật có độ tin cậy và tương quan cao nhất:
+
+        \begin{table}
+        \centering
+        \small
+        \begin{tabular}{|l|l|c|c|l|}
+        \hline
+        \textbf{Antecedent} & \textbf{Consequent} & \textbf{Conf.} & \textbf{Lift} & \textbf{Đánh giá} \\
+        \hline
+        Business & Frontpage & \textbf{56.8\%} & 1.80 & Rất mạnh \\
+        Local & Frontpage & 54.2\% & 1.72 & Mạnh \\
+        Living & Frontpage & 51.9\% & 1.64 & Khá \\
+        Misc & On-air & 41.3\% & \textbf{1.88} & Tương quan cao \\
+        Opinion & Frontpage & 48.1\% & 1.52 & Khá \\
+        \hline
+        \end{tabular}
+        \end{table}
+        
+        \textit{*Note: Misc = Tổng hợp, On-air = Phát sóng video}
+    \end{frame}
+
+    \begin{frame}{Phân tích chi tiết}
+        \textbf{1. Mối quan hệ Business $\rightarrow$ Frontpage (Conf=56.8\%, Lift=1.80)}
+        \begin{itemize}
+            \item \textbf{Insight}: Người đọc tin Kinh doanh có xu hướng rất cao quay lại Trang chủ.
+            \item \textbf{Hành vi}: Họ thường là người cập nhật tin tức tổng quát, sau khi đọc tin thị trường sẽ quay ra xem tin nóng khác.
+            \item \textbf{Hành động}: Đặt nút "Về trang chủ" to rõ hoặc Widget "Tin nóng trang chủ" ngay trong bài viết Kinh doanh.
+        \end{itemize}
+
+        \vspace{0.3cm}
+        \textbf{2. Mối quan hệ Misc $\rightarrow$ On-air (Lift=1.88 - Cao nhất)}
+        \begin{itemize}
+            \item \textbf{Insight}: Dù Confidence (41\%) không cao nhất, nhưng Lift cao nhất cho thấy hai mục này hút nhau mạnh mẽ. Người xem tin Tổng hợp rất thích xem Video.
+            \item \textbf{Hành động}: Nhúng video (On-air) vào các tin Tổng hợp (Misc) để tăng view.
+        \end{itemize}
+    \end{frame}
+
+    % ============================================================
+    % 6. KẾT LUẬN
+    % ============================================================
+    \section{Kết luận}
+
+    \begin{frame}{Đóng góp của đề tài}
+        \begin{enumerate}
+            \item \textbf{Hiểu sâu thuật toán}: Đã tự tay cài đặt Eclat, hiểu rõ cơ chế Vertical Format và DFS.
+            \item \textbf{Xử lý Big Data}: Đã xử lý thành công file dữ liệu gần 1 triệu dòng mà không bị tràn bộ nhớ (nhờ tối ưu hóa Set).
+            \item \textbf{Giá trị thực tiễn}: Các luật tìm ra hoàn toàn hợp lý và có thể ứng dụng để:
+            \begin{itemize}
+                \item Sắp xếp lại menu website.
+                \item Xây dựng hệ thống Recommender System cơ bản.
+            \end{itemize}
+        \end{enumerate}
+    \end{frame}
+
+    \begin{frame}{Hạn chế và Hướng phát triển}
+        \textbf{Hạn chế:}
+        \begin{itemize}
+            \item Dữ liệu cũ (năm 1999) có thể không phản ánh hành vi người dùng hiện đại (thích video ngắn, mxh...).
+            \item Thuật toán chưa tối ưu cho việc cập nhật dữ liệu mới (Incremental Mining).
+        \end{itemize}
+        
+        \vspace{0.5cm}
+        \textbf{Hướng phát triển:}
+        \begin{itemize}
+            \item \textbf{Sequence Mining}: Sử dụng thuật toán GSP hoặc PrefixSpan để xét đến \textit{thứ tự} thời gian (Ví dụ: Xem A rồi mới xem B khác với xem B rồi mới xem A).
+            \item \textbf{Giao diện Demo}: Xây dựng Web App trực quan hóa các luật kết hợp dạng đồ thị (Graph).
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}
+        \centering
+        \Huge \textbf{CẢM ƠN THẦY VÀ CÁC BẠN\\ĐÃ LẮNG NGHE!}
+        
+        \vspace{1cm}
+        \large \textbf{Q \& A}
+    \end{frame}
+
+    \end{document}
