@@ -87,23 +87,11 @@ def load_data(filepath=DATA_PATH, limit=None, verbose=True):
         >>> print(data[0])
         {'Frontpage', 'News'}
     """
-    if verbose:
-        print("-" * 50)
-        print(f"📂 Thư mục gốc dự án: {PROJECT_ROOT}")
-        print(f"🎯 Đang tìm file tại: {filepath}")
-
     # Kiểm tra file tồn tại
     if not os.path.exists(filepath):
         if verbose:
-            print("❌ LỖI: KHÔNG TÌM THẤY FILE DỮ LIỆU!")
-            print("👉 Vui lòng kiểm tra:")
-            print("   1. Bạn đã giải nén file chưa? (File phải là .seq, không phải .gz)")
-            print("   2. Tên file có đúng là 'msnbc.seq' không?")
-            print(f"   3. File phải nằm ở: {os.path.join(PROJECT_ROOT, 'data', 'raw')}")
+            print("❌ Không tìm thấy file dữ liệu!")
         return []
-
-    if verbose:
-        print("✅ Đã tìm thấy file! Đang tiến hành đọc và xử lý...")
 
     dataset = []
     category_counter = Counter()  # Đếm số lần xuất hiện từng chuyên mục
@@ -145,14 +133,7 @@ def load_data(filepath=DATA_PATH, limit=None, verbose=True):
                     dataset.append(transaction)
 
         if verbose:
-            print(f"✅ Đã tải thành công {len(dataset):,} phiên giao dịch (transactions).")
-            if skipped_lines > 0:
-                print(f"   ⏩ Đã bỏ qua {skipped_lines} dòng metadata/trống.")
-            
-            # Thống kê top 5 chuyên mục phổ biến nhất
-            print(f"\n📊 TOP 5 CHUYÊN MỤC PHỔ BIẾN NHẤT:")
-            for category, count in category_counter.most_common(5):
-                print(f"   • {category}: {count:,} lượt xem")
+            print(f"Đã tải {len(dataset):,} phiên giao dịch.")
         
         return dataset
 

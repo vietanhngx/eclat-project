@@ -27,26 +27,26 @@ Phân tích dữ liệu log truy cập (clickstream) để tìm ra các nhóm n�
 Eclat_Project/
 |-- data/
 |   +-- raw/
-|       +-- msnbc.seq           # Dữ liệu gốc từ UCI (~989,818 phiên)
+|       +-- msnbc.seq           # Dữ liệu gốc từ UCI
 |-- docs/
-|   |-- baocao.tex              # Báo cáo LaTeX
-|   +-- *.pdf                   # Tài liệu tham khảo
+|   |-- baocao.tex              # Báo cáo LaTeX chính
+|   +-- scikit-learn_user_guide.pdf (Reference)
 |-- src/
 |   |-- data_loader.py          # Module đọc và tiền xử lý dữ liệu
 |   |-- eclat_algo.py           # Thuật toán Eclat (Vertical Data Format)
 |   +-- utils.py                # Sinh luật và hiển thị gợi ý
-|-- main.py                     # File điều phối chính
-|-- requirements.txt            # Dependencies (chỉ dùng thư viện chuẩn Python)
-+-- README.md
+|-- main.py                     # File điều phối chính (Entry point)
+|-- requirements.txt            # Dependencies (No external lib required)
++-- README.md                   # File hướng dẫn này
 ```
 
-## � Cách chạy
+## 🚀 Hướng dẫn chạy
+
+### 1. Phân tích dữ liệu (Python)
+Yêu cầu: Python 3.x (Chỉ sử dụng thư viện chuẩn: `os`, `collections`, `itertools`)
 
 ```bash
-# Di chuyển vào thư mục project
-cd Eclat_Project
-
-# Chạy chương trình
+# Tại thư mục gốc Eclat_Project/
 python main.py
 ```
 
@@ -96,7 +96,25 @@ python main.py
 | **Confidence** | Support(A∪B) / Support(A) | Xác suất B khi đã xem A |
 | **Lift** | Support(A∪B) / (Support(A) × Support(B)) | Độ tương quan (>1: tích cực) |
 
-## 📝 Kết quả mẫu
+## 📝 Kết quả thực nghiệm
+
+Khi chạy với cấu hình `MIN_SUPPORT=0.02` và `MIN_CONFIDENCE=0.40`:
+
+```text
+[1] Đọc dữ liệu: 989,818 phiên
+[2] Kết quả Eclat: 32 tập phổ biến (15 items đơn, 17 cặp)
+[3] Sinh luật: 5 luật thỏa mãn
+```
+
+**Top 5 luật gợi ý mạnh nhất:**
+
+| STT | Nếu xem | Gợi ý | Support | Conf. | Lift | Ý nghĩa |
+|---|---|---|---|---|---|---|
+| 1 | Tổng hợp | Phát sóng | 3.36% | 41.3% | **1.88** | Khả năng xem tiếp cao hơn ngẫu nhiên 88% |
+| 2 | Kinh doanh | Trang chủ | 3.31% | **56.8%** | 1.80 | Hơn 56% người xem Kinh doanh sẽ về Trang chủ |
+| 3 | Đời sống | Trang chủ | 2.65% | 51.9% | 1.64 | |
+| 4 | Tổng hợp | Trang chủ | 3.68% | 45.2% | 1.43 | |
+| 5 | Tin tức | Trang chủ | 7.55% | 42.6% | 1.35 | |
 
 ```
 ===========================================================================

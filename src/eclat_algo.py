@@ -98,8 +98,8 @@ class Eclat:
         self._total_transactions = len(dataset)
         min_support_count = self._total_transactions * self.min_support
         
-        print(f"📊 Tổng số phiên: {self._total_transactions:,}")
-        print(f"📉 Ngưỡng hỗ trợ tuyệt đối: {min_support_count:.0f} (= {self.min_support*100}% × {self._total_transactions:,})")
+        print(f"Tổng số phiên: {self._total_transactions:,}")
+        print(f"Ngưỡng hỗ trợ: {min_support_count:.0f} ({self.min_support*100}%)")
 
         # 2. CHUYỂN ĐỔI DỮ LIỆU NGANG -> DỌC (Vertical Data Format)
         # Dạng: { 'Item_A': {tid0, tid1, tid5}, 'Item_B': {tid2, tid3}, ... }
@@ -121,7 +121,7 @@ class Eclat:
             if len(tids) >= min_support_count
         }
         
-        print(f"📋 Số items đơn lẻ phổ biến: {len(tid_dict)}")
+        print(f"Số items phổ biến: {len(tid_dict)}")
         
         # 4. Sắp xếp theo độ phổ biến giảm dần (Tối ưu: Pruning hiệu quả hơn)
         # Items phổ biến nhất xét trước giúp cắt tỉa nhánh nhanh hơn
@@ -132,7 +132,7 @@ class Eclat:
         )
         
         # 5. BẮT ĐẦU ĐỆ QUY (Depth-First Search)
-        print("🚀 Đang chạy thuật toán Eclat (Đệ quy DFS)...")
+        print(f"Đang chạy thuật toán Eclat...")
         
         self._eclat_recursive(
             prefix=[], 
@@ -140,7 +140,7 @@ class Eclat:
             min_support_count=min_support_count
         )
         
-        print(f"✅ Hoàn tất! Tìm thấy {len(self.frequent_itemsets)} tập mục thường xuyên.")
+        print(f"Tìm thấy {len(self.frequent_itemsets)} tập mục phổ biến.")
         return self.frequent_itemsets
 
     def _eclat_recursive(self, prefix, tid_subset, min_support_count):

@@ -106,7 +106,7 @@
     \end{flushleft}
     
     \vfill
-    {\large Thành phố ..., tháng ... năm 2026}
+    {\large Hà Nội, tháng 2 năm 2026.}
 \end{titlepage}
 
 % ============================================================
@@ -162,55 +162,163 @@ Khai phá luật kết hợp là quá trình tìm kiếm các mối quan hệ th
 
 \subsubsection{Các khái niệm cơ bản}
 
-\textbf{Định nghĩa 2.1 (Itemset):} Cho $I = \{i_1, i_2, ..., i_n\}$ là tập hợp các mục. Một itemset $X$ là tập con của $I$, ký hiệu $X \subseteq I$.
+\begin{description}
+\item[Định nghĩa 2.1 (Itemset):] Cho $I = \{i_1, i_2, ..., i_n\}$ là tập hợp các mục. Một itemset $X$ là tập con của $I$, ký hiệu $X \subseteq I$. Một k-itemset là itemset chứa đúng $k$ phần tử.
 
-\textbf{Định nghĩa 2.2 (Transaction Database):} Một cơ sở dữ liệu giao dịch $D$ là tập hợp các giao dịch $T = \{T_1, T_2, ..., T_m\}$, trong đó mỗi giao dịch $T_i \subseteq I$ có một định danh duy nhất TID (Transaction ID).
+\item[Định nghĩa 2.2 (Transaction Database):] Một cơ sở dữ liệu giao dịch $D$ là tập hợp các giao dịch $T = \{T_1, T_2, ..., T_m\}$, trong đó mỗi giao dịch $T_i \subseteq I$ có một định danh duy nhất TID (Transaction ID).
 
-\textbf{Định nghĩa 2.3 (Support - Độ hỗ trợ):} Độ hỗ trợ của itemset $X$ được định nghĩa là tỷ lệ các giao dịch chứa $X$ trong $D$:
+\item[Định nghĩa 2.3 (Support - Độ hỗ trợ):] Độ hỗ trợ của itemset $X$ được định nghĩa là tỷ lệ các giao dịch chứa $X$ trong $D$:
 \begin{equation}
     Support(X) = \frac{|\{T \in D : X \subseteq T\}|}{|D|}
 \end{equation}
+Ý nghĩa: Support cho biết mức độ phổ biến của một itemset trong toàn bộ cơ sở dữ liệu.
 
-\textbf{Định nghĩa 2.4 (Frequent Itemset - Tập phổ biến):} Một itemset $X$ được gọi là phổ biến nếu $Support(X) \geq min\_support$, với $min\_support$ là ngưỡng do người dùng định nghĩa.
+\item[Định nghĩa 2.4 (Frequent Itemset - Tập phổ biến):] Một itemset $X$ được gọi là phổ biến nếu $Support(X) \geq min\_support$, với $min\_support$ là ngưỡng do người dùng định nghĩa.
 
-\textbf{Định nghĩa 2.5 (Association Rule - Luật kết hợp):} Một luật kết hợp có dạng $X \Rightarrow Y$, trong đó $X, Y \subseteq I$ và $X \cap Y = \emptyset$.
+\item[Định nghĩa 2.5 (Association Rule - Luật kết hợp):] Một luật kết hợp có dạng $X \Rightarrow Y$, trong đó $X, Y \subseteq I$ và $X \cap Y = \emptyset$. Luật này có nghĩa là ``Nếu $X$ xuất hiện thì $Y$ cũng có khả năng xuất hiện''.
+\end{description}
 
 \subsubsection{Các chỉ số đánh giá luật}
 
-\textbf{1. Confidence (Độ tin cậy):}
+\begin{description}
+\item[1. Confidence (Độ tin cậy):]~\\
+Công thức:
 \begin{equation}
     Confidence(X \Rightarrow Y) = P(Y|X) = \frac{Support(X \cup Y)}{Support(X)}
 \end{equation}
-Ý nghĩa: Trong số các giao dịch chứa $X$, có bao nhiêu phần trăm cũng chứa $Y$.
+Ý nghĩa: Trong số các giao dịch chứa $X$, có bao nhiêu phần trăm cũng chứa $Y$. Confidence thể hiện độ chắc chắn của luật.
 
-\textbf{2. Lift (Độ tương quan):}
+\item[2. Lift (Độ tương quan):]~\\
+Công thức:
 \begin{equation}
     Lift(X \Rightarrow Y) = \frac{Support(X \cup Y)}{Support(X) \times Support(Y)}
 \end{equation}
-Ý nghĩa:
+Ý nghĩa của Lift:
 \begin{itemize}
-    \item $Lift > 1$: $X$ và $Y$ có tương quan tích cực (xuất hiện cùng nhau nhiều hơn ngẫu nhiên)
+    \item $Lift > 1$: $X$ và $Y$ có tương quan tích cực (xuất hiện cùng nhau nhiều hơn kỳ vọng ngẫu nhiên)
     \item $Lift = 1$: $X$ và $Y$ độc lập thống kê
-    \item $Lift < 1$: $X$ và $Y$ có tương quan âm
+    \item $Lift < 1$: $X$ và $Y$ có tương quan âm (ít xuất hiện cùng nhau hơn kỳ vọng)
 \end{itemize}
+\end{description}
+
+\subsubsection{Ví dụ minh họa tổng hợp}
+
+Xét cơ sở dữ liệu giao dịch siêu thị với 5 giao dịch:
+
+\begin{table}[H]
+\centering
+\caption{Cơ sở dữ liệu giao dịch ví dụ}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{TID} & \textbf{Items} \\
+\hline
+T1 & Bánh mì, Sữa, Bơ \\
+T2 & Bánh mì, Sữa \\
+T3 & Sữa, Bơ \\
+T4 & Bánh mì, Bơ \\
+T5 & Bánh mì, Sữa, Bơ \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Bước 1: Xác định các thông số cơ bản}
+\begin{itemize}
+    \item Tập items: $I = \{\text{Bánh mì, Sữa, Bơ}\}$
+    \item Tổng số giao dịch: $|D| = 5$
+\end{itemize}
+
+\textbf{Bước 2: Tính Support cho các itemset}
+
+\begin{table}[H]
+\centering
+\caption{Support của các itemset}
+\begin{tabular}{|l|c|c|l|}
+\hline
+\textbf{Itemset} & \textbf{Số giao dịch} & \textbf{Support} & \textbf{Xuất hiện trong} \\
+\hline
+\{Bánh mì\} & 4 & 80\% & T1, T2, T4, T5 \\
+\{Sữa\} & 4 & 80\% & T1, T2, T3, T5 \\
+\{Bơ\} & 4 & 80\% & T1, T3, T4, T5 \\
+\{Bánh mì, Sữa\} & 3 & 60\% & T1, T2, T5 \\
+\{Bánh mì, Bơ\} & 3 & 60\% & T1, T4, T5 \\
+\{Sữa, Bơ\} & 3 & 60\% & T1, T3, T5 \\
+\{Bánh mì, Sữa, Bơ\} & 2 & 40\% & T1, T5 \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Bước 3: Xác định Frequent Itemsets}
+
+Nếu đặt $min\_support = 50\%$, thì các itemset phổ biến là:
+\begin{itemize}
+    \item 1-itemsets: \{Bánh mì\}, \{Sữa\}, \{Bơ\} (Support = 80\%)
+    \item 2-itemsets: \{Bánh mì, Sữa\}, \{Bánh mì, Bơ\}, \{Sữa, Bơ\} (Support = 60\%)
+\end{itemize}
+
+\textbf{Bước 4: Sinh và đánh giá luật kết hợp}
+
+Xét luật: $\{\text{Bánh mì}\} \Rightarrow \{\text{Sữa}\}$ (``Nếu khách mua Bánh mì, gợi ý họ mua Sữa'')
+
+\textit{Tính Confidence:}
+\begin{align*}
+    Confidence(\{\text{Bánh mì}\} \Rightarrow \{\text{Sữa}\}) &= \frac{Support(\{\text{Bánh mì, Sữa}\})}{Support(\{\text{Bánh mì}\})} \\
+    &= \frac{60\%}{80\%} = \frac{3}{4} = 75\%
+\end{align*}
+$\Rightarrow$ Trong 4 giao dịch có Bánh mì, có 3 giao dịch cũng có Sữa (75\%).
+
+\textit{Tính Lift:}
+\begin{align*}
+    Lift(\{\text{Bánh mì}\} \Rightarrow \{\text{Sữa}\}) &= \frac{Support(\{\text{Bánh mì, Sữa}\})}{Support(\{\text{Bánh mì}\}) \times Support(\{\text{Sữa}\})} \\
+    &= \frac{60\%}{80\% \times 80\%} = \frac{0.6}{0.64} = 0.9375
+\end{align*}
+$\Rightarrow$ Lift $< 1$ cho thấy tương quan âm nhẹ.
+
+\textbf{Bước 5: Tổng kết các chỉ số}
+
+\begin{table}[H]
+\centering
+\caption{Tổng kết luật \{Bánh mì\} $\Rightarrow$ \{Sữa\}}
+\begin{tabular}{|l|c|p{8cm}|}
+\hline
+\textbf{Chỉ số} & \textbf{Giá trị} & \textbf{Ý nghĩa} \\
+\hline
+Support & 60\% & 60\% giao dịch có cả Bánh mì và Sữa \\
+Confidence & 75\% & 75\% người mua Bánh mì cũng mua Sữa \\
+Lift & 0.94 & Tương quan âm nhẹ (xuất hiện cùng nhau ít hơn kỳ vọng) \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Kết luận:} Mặc dù Confidence = 75\% khá cao, nhưng Lift = 0.94 < 1 cho thấy Bánh mì và Sữa không thực sự có mối liên hệ mạnh - chúng đều phổ biến nên hay xuất hiện cùng nhau một cách tự nhiên.
+
 
 \subsection{Thuật toán Eclat}
 
 \subsubsection{Giới thiệu}
 
-Thuật toán \textbf{Eclat (Equivalence Class Clustering and bottom-up Lattice Traversal)} được Mohammed J. Zaki đề xuất năm 2000 \cite{zaki2000}. Đây là một trong những thuật toán hiệu quả nhất để khai phá tập phổ biến.
+Thuật toán \textbf{Eclat (Equivalence Class Clustering and bottom-up Lattice Traversal)} được Mohammed J. Zaki đề xuất năm 2000 \cite{zaki2000}. Đây là một trong những thuật toán hiệu quả nhất để khai phá tập phổ biến, khắc phục những hạn chế của thuật toán Apriori truyền thống.
+
+\textbf{Ý tưởng chính:} Thay vì quét cơ sở dữ liệu nhiều lần như Apriori, Eclat chuyển đổi dữ liệu sang định dạng dọc (Vertical Format) và sử dụng phép giao tập hợp để tính Support.
 
 \textbf{Đặc điểm nổi bật:}
-\begin{itemize}
+\begin{enumerate}
     \item Sử dụng \textbf{Vertical Data Format} thay vì Horizontal như Apriori
-    \item Chỉ cần \textbf{một lần quét} cơ sở dữ liệu
+    \item Chỉ cần \textbf{một lần quét} cơ sở dữ liệu (ở bước tiền xử lý)
     \item Sử dụng \textbf{Depth-First Search (DFS)} để duyệt không gian tìm kiếm
-    \item Tính Support bằng \textbf{phép giao TID-Sets}
-\end{itemize}
+    \item Tính Support bằng \textbf{phép giao TID-Sets} - rất nhanh với phép toán tập hợp
+    \item Áp dụng \textbf{nguyên lý Apriori} để cắt tỉa sớm các nhánh không thỏa mãn
+\end{enumerate}
 
 \subsubsection{Định dạng dữ liệu dọc (Vertical Data Format)}
 
-Trong định dạng ngang (Horizontal), mỗi dòng là một giao dịch chứa danh sách các items:
+\textbf{Định dạng ngang (Horizontal Format):} Mỗi dòng là một giao dịch chứa danh sách các items. Đây là cách lưu trữ truyền thống.
+
+
+\textbf{Định dạng dọc (Vertical Format):} Mỗi item được lưu kèm danh sách TID (Transaction ID) của các giao dịch chứa item đó. Danh sách này gọi là \textbf{TID-Set} hoặc \textbf{Tidset}.
+
+\textbf{Ví dụ chuyển đổi:}
+
+\textit{Định dạng ngang (Horizontal):}
 \begin{center}
 \begin{tabular}{|c|l|}
 \hline
@@ -219,29 +327,57 @@ Trong định dạng ngang (Horizontal), mỗi dòng là một giao dịch chứ
 1 & A, B, C \\
 2 & B, C, D \\
 3 & A, C, D \\
+4 & A, B, D \\
 \hline
 \end{tabular}
 \end{center}
 
-Trong định dạng dọc (Vertical), mỗi item được lưu kèm danh sách TID chứa item đó:
+\textit{Định dạng dọc (Vertical):}
 \begin{center}
 \begin{tabular}{|c|l|}
 \hline
 \textbf{Item} & \textbf{TID-Set} \\
 \hline
-A & \{1, 3\} \\
-B & \{1, 2\} \\
+A & \{1, 3, 4\} \\
+B & \{1, 2, 4\} \\
 C & \{1, 2, 3\} \\
-D & \{2, 3\} \\
+D & \{2, 3, 4\} \\
 \hline
 \end{tabular}
 \end{center}
 
-\textbf{Ưu điểm:} Để tính Support của itemset $\{A, C\}$, ta chỉ cần tính giao của TID-Sets:
+\textbf{Ưu điểm của Vertical Format:}
+\begin{enumerate}
+    \item \textbf{Tính Support nhanh:} Support của itemset = kích thước của TID-Set giao nhau
+    \item \textbf{Không cần quét lại DB:} Mọi thao tác đều trên TID-Sets trong bộ nhớ
+    \item \textbf{Phù hợp với DFS:} Dễ dàng mở rộng itemset bằng phép giao
+\end{enumerate}
+
+\subsubsection{Nguyên lý hoạt động}
+
+\begin{description}
+\item[Tính chất quan trọng:] Với hai itemsets $X$ và $Y$, TID-Set của itemset $X \cup Y$ là:
 \begin{equation}
-    TID(A \cup C) = TID(A) \cap TID(C) = \{1, 3\} \cap \{1, 2, 3\} = \{1, 3\}
+    TID(X \cup Y) = TID(X) \cap TID(Y)
 \end{equation}
-Suy ra $Support(\{A, C\}) = |TID(A \cup C)| / |D| = 2/3 \approx 66.7\%$
+
+\item[Công thức tính Support:]~
+\begin{equation}
+    Support(X \cup Y) = \frac{|TID(X) \cap TID(Y)|}{|D|}
+\end{equation}
+
+\item[Nguyên lý Apriori (Downward Closure):] Nếu một itemset không phổ biến, thì tất cả các tập cha (superset) của nó cũng không phổ biến. Eclat sử dụng tính chất này để cắt tỉa sớm.
+\end{description}
+
+\subsubsection{Các bước thực hiện thuật toán}
+
+\begin{enumerate}
+    \item Chuyển đổi cơ sở dữ liệu từ định dạng ngang sang định dạng dọc (TID-Sets).
+    \item Lọc bỏ các 1-itemset có Support < min\_support (áp dụng nguyên lý Apriori).
+    \item Sắp xếp các items theo thứ tự (thường theo độ phổ biến giảm dần để tối ưu).
+    \item Với mỗi item, tính giao TID-Set với các items khác để tạo 2-itemsets, 3-itemsets,... (đệ quy DFS).
+    \item Chỉ giữ lại các itemsets có Support >= min\_support.
+\end{enumerate}
 
 \subsubsection{Mã giả thuật toán Eclat}
 
@@ -252,35 +388,128 @@ Suy ra $Support(\{A, C\}) = |TID(A \cup C)| / |D| = 2/3 \approx 66.7\%$
 \Ensure Tập hợp tất cả các Frequent Itemsets $F$
 
 \State $F \gets \emptyset$
+\State $min\_support\_count \gets |D| \times min\_support$
 \State Chuyển đổi $D$ sang định dạng dọc: $TID\_Dict$
-\State Lọc các 1-itemsets có $Support < min\_support$
+\State Lọc các 1-itemsets có $|TID| < min\_support\_count$
+\State Sắp xếp $TID\_Dict$ theo $|TID|$ giảm dần
 
-\Procedure{Eclat\_Recursive}{$Prefix$, $TID\_Subset$}
-    \ForAll{$(item_i, tids_i) \in TID\_Subset$}
-        \State $NewItemset \gets Prefix \cup \{item_i\}$
-        \State $Support \gets |tids_i| / |D|$
-        \If{$Support \geq min\_support$}
-            \State $F \gets F \cup \{(NewItemset, Support)\}$
-        \EndIf
+\Procedure{Eclat\_Recursive}{$Prefix$, $TID\_Subset$, $min\_support\_count$}
+    \While{$TID\_Subset \neq \emptyset$}
+        \State $(item, tids) \gets TID\_Subset.pop(0)$ \Comment{Lấy phần tử đầu}
+        \State $NewItemset \gets Prefix \cup \{item\}$
+        \State $F \gets F \cup \{(NewItemset, |tids|)\}$ \Comment{Lưu kết quả}
         
         \State $NewSubset \gets \emptyset$
-        \ForAll{$(item_j, tids_j) \in TID\_Subset$ \textbf{where} $j > i$}
-            \State $IntersectTids \gets tids_i \cap tids_j$ \Comment{Phép giao TID-Sets}
-            \If{$|IntersectTids| / |D| \geq min\_support$}
-                \State $NewSubset \gets NewSubset \cup \{(item_j, IntersectTids)\}$
+        \ForAll{$(other\_item, other\_tids) \in TID\_Subset$}
+            \State $IntersectTids \gets tids \cap other\_tids$ \Comment{Phép giao}
+            \If{$|IntersectTids| \geq min\_support\_count$}
+                \State $NewSubset \gets NewSubset \cup \{(other\_item, IntersectTids)\}$
             \EndIf
         \EndFor
         
         \If{$NewSubset \neq \emptyset$}
-            \State \Call{Eclat\_Recursive}{$NewItemset$, $NewSubset$}
+            \State \Call{Eclat\_Recursive}{$NewItemset$, $NewSubset$, $min\_support\_count$}
         \EndIf
-    \EndFor
+    \EndWhile
 \EndProcedure
 
-\State \Call{Eclat\_Recursive}{$\emptyset$, $TID\_Dict$}
+\State \Call{Eclat\_Recursive}{$\emptyset$, $TID\_Dict$, $min\_support\_count$}
 \State \Return $F$
 \end{algorithmic}
 \end{algorithm}
+
+\subsubsection{Ví dụ minh họa từng bước}
+
+Xét cơ sở dữ liệu với 4 giao dịch và $min\_support = 50\%$ (tức itemset phải xuất hiện trong ít nhất 2 giao dịch):
+
+\begin{table}[H]
+\centering
+\caption{Dữ liệu đầu vào}
+\begin{tabular}{|c|l|}
+\hline
+\textbf{TID} & \textbf{Items} \\
+\hline
+1 & A, B, C \\
+2 & B, C, D \\
+3 & A, C, D \\
+4 & A, B, D \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Bước 1: Chuyển sang Vertical Format}
+
+\begin{table}[H]
+\centering
+\caption{TID-Sets của các 1-itemset}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{Item} & \textbf{TID-Set} & \textbf{Count} & \textbf{Support} \\
+\hline
+A & \{1, 3, 4\} & 3 & 75\% \\
+B & \{1, 2, 4\} & 3 & 75\% \\
+C & \{1, 2, 3\} & 3 & 75\% \\
+D & \{2, 3, 4\} & 3 & 75\% \\
+\hline
+\end{tabular}
+\end{table}
+
+Tất cả 1-itemsets đều có Support >= 50\%, nên giữ lại hết.
+
+\textbf{Bước 2: Tính TID-Sets cho 2-itemsets (bằng phép giao)}
+
+\begin{table}[H]
+\centering
+\caption{Tính toán 2-itemsets}
+\begin{tabular}{|l|l|c|c|c|}
+\hline
+\textbf{Itemset} & \textbf{Phép giao} & \textbf{TID-Set} & \textbf{Count} & \textbf{Phổ biến?} \\
+\hline
+\{A, B\} & \{1,3,4\} $\cap$ \{1,2,4\} & \{1, 4\} & 2 & Có (50\%) \\
+\{A, C\} & \{1,3,4\} $\cap$ \{1,2,3\} & \{1, 3\} & 2 & Có (50\%) \\
+\{A, D\} & \{1,3,4\} $\cap$ \{2,3,4\} & \{3, 4\} & 2 & Có (50\%) \\
+\{B, C\} & \{1,2,4\} $\cap$ \{1,2,3\} & \{1, 2\} & 2 & Có (50\%) \\
+\{B, D\} & \{1,2,4\} $\cap$ \{2,3,4\} & \{2, 4\} & 2 & Có (50\%) \\
+\{C, D\} & \{1,2,3\} $\cap$ \{2,3,4\} & \{2, 3\} & 2 & Có (50\%) \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Bước 3: Tính TID-Sets cho 3-itemsets}
+
+\begin{table}[H]
+\centering
+\caption{Tính toán 3-itemsets}
+\begin{tabular}{|l|l|c|c|c|}
+\hline
+\textbf{Itemset} & \textbf{Phép giao} & \textbf{TID-Set} & \textbf{Count} & \textbf{Phổ biến?} \\
+\hline
+\{A, B, C\} & \{1,4\} $\cap$ \{1,2,3\} & \{1\} & 1 & Không (25\%) \\
+\{A, B, D\} & \{1,4\} $\cap$ \{2,3,4\} & \{4\} & 1 & Không (25\%) \\
+\{A, C, D\} & \{1,3\} $\cap$ \{2,3,4\} & \{3\} & 1 & Không (25\%) \\
+\{B, C, D\} & \{1,2\} $\cap$ \{2,3,4\} & \{2\} & 1 & Không (25\%) \\
+\hline
+\end{tabular}
+\end{table}
+
+Không có 3-itemset nào đạt ngưỡng 50\%, thuật toán dừng.
+
+\textbf{Bước 4: Tổng kết kết quả}
+
+\begin{table}[H]
+\centering
+\caption{Tất cả Frequent Itemsets với min\_support = 50\%}
+\begin{tabular}{|c|l|c|}
+\hline
+\textbf{Kích thước} & \textbf{Frequent Itemsets} & \textbf{Số lượng} \\
+\hline
+1-itemset & \{A\}, \{B\}, \{C\}, \{D\} & 4 \\
+2-itemset & \{A,B\}, \{A,C\}, \{A,D\}, \{B,C\}, \{B,D\}, \{C,D\} & 6 \\
+\hline
+\textbf{Tổng} & & \textbf{10} \\
+\hline
+\end{tabular}
+\end{table}
 
 \subsubsection{Độ phức tạp thuật toán}
 
@@ -289,26 +518,35 @@ Suy ra $Support(\{A, C\}) = |TID(A \cup C)| / |D| = 2/3 \approx 66.7\%$
     \begin{itemize}
         \item $n$: Số lượng giao dịch
         \item $m$: Số lượng items unique
-        \item $k$: Độ sâu tối đa của cây tìm kiếm
+        \item $k$: Độ sâu tối đa của cây tìm kiếm (chiều dài itemset lớn nhất)
     \end{itemize}
     \item \textbf{Space Complexity:} $O(n \times m)$ cho việc lưu trữ TID-Sets
 \end{itemize}
+
+\textbf{Lưu ý:} Khi dữ liệu sparse (thưa), Eclat rất hiệu quả vì TID-Sets nhỏ. Khi dữ liệu dense (dày đặc), bộ nhớ có thể là vấn đề.
 
 \subsection{So sánh Eclat với Apriori}
 
 \begin{table}[H]
 \centering
-\caption{So sánh giữa Apriori và Eclat}
-\begin{tabular}{|l|c|c|}
+\caption{So sánh chi tiết giữa Apriori và Eclat}
+\begin{tabular}{|l|p{5cm}|p{5cm}|}
 \hline
 \textbf{Tiêu chí} & \textbf{Apriori} & \textbf{Eclat} \\
 \hline
-Định dạng dữ liệu & Horizontal & Vertical \\
-Số lần quét DB & Nhiều lần & 1 lần \\
-Chiến lược duyệt & BFS & DFS \\
-Tính Support & Đếm trực tiếp & Giao TID-Sets \\
-Bộ nhớ & Thấp & Cao hơn \\
-Tốc độ & Chậm hơn & Nhanh hơn \\
+Định dạng dữ liệu & Horizontal (TID, Items) & Vertical (Item, TID-Set) \\
+\hline
+Số lần quét DB & Nhiều lần (k lần cho k-itemset) & 1 lần (ở bước tiền xử lý) \\
+\hline
+Chiến lược duyệt & BFS (theo chiều rộng) & DFS (theo chiều sâu) \\
+\hline
+Tính Support & Đếm trực tiếp trong DB & Phép giao TID-Sets \\
+\hline
+Bộ nhớ & Thấp (không lưu TID-Sets) & Cao hơn (lưu TID-Sets) \\
+\hline
+Tốc độ & Chậm hơn (quét DB nhiều lần) & Nhanh hơn (phép giao nhanh) \\
+\hline
+Phù hợp với & Dữ liệu dense, ít items & Dữ liệu sparse, nhiều items \\
 \hline
 \end{tabular}
 \end{table}
@@ -346,17 +584,17 @@ File dữ liệu \texttt{msnbc.seq} có cấu trúc:
 \caption{Ánh xạ ID sang tên chuyên mục}
 \begin{tabular}{|c|l|c|l|}
 \hline
-\textbf{ID} & \textbf{Tên gốc} & \textbf{ID} & \textbf{Tên gốc} \\
+\textbf{ID} & \textbf{Tên chuyên mục} & \textbf{ID} & \textbf{Tên chuyên mục} \\
 \hline
-1 & Frontpage (Trang chủ) & 10 & Living (Đời sống) \\
-2 & News (Tin tức) & 11 & Business (Kinh doanh) \\
-3 & Tech (Công nghệ) & 12 & Sports (Thể thao) \\
-4 & Local (Địa phương) & 13 & Summary (Tóm tắt) \\
-5 & Opinion (Ý kiến) & 14 & BBS (Diễn đàn) \\
-6 & On-air (Phát sóng) & 15 & Travel (Du lịch) \\
-7 & Misc (Tổng hợp) & 16 & MSN-News (Tin MSN) \\
-8 & Weather (Thời tiết) & 17 & MSN-Sports (Thể thao MSN) \\
-9 & Health (Sức khỏe) & & \\
+1 & Trang chủ (Frontpage) & 10 & Đời sống (Living) \\
+2 & Tin tức (News) & 11 & Kinh doanh (Business) \\
+3 & Công nghệ (Tech) & 12 & Thể thao (Sports) \\
+4 & Địa phương (Local) & 13 & Tóm tắt (Summary) \\
+5 & Ý kiến (Opinion) & 14 & Diễn đàn (BBS) \\
+6 & Phát sóng (On-air) & 15 & Du lịch (Travel) \\
+7 & Tổng hợp (Misc) & 16 & Tin MSN (MSN-News) \\
+8 & Thời tiết (Weather) & 17 & Thể thao MSN (MSN-Sports) \\
+9 & Sức khỏe (Health) & & \\
 \hline
 \end{tabular}
 \end{table}
@@ -372,16 +610,22 @@ File dữ liệu \texttt{msnbc.seq} có cấu trúc:
 \end{enumerate}
 
 \begin{lstlisting}[caption={Code tiền xử lý dữ liệu},label={lst:preprocess}]
-def load_data(filepath, limit=None):
+def load_data(filepath=DATA_PATH, limit=None):
     dataset = []
-    with open(filepath, 'r') as f:
+    
+    with open(filepath, 'r', encoding='utf-8') as f:
         for line in f:
-            # Bo qua dong metadata
-            if line.startswith('%'):
+            if limit and len(dataset) >= limit:
+                break
+            
+            clean_line = line.strip()
+            
+            # Bo qua dong trong va metadata
+            if not clean_line or clean_line.startswith('%'):
                 continue
             
             # Tach cac ID so
-            item_ids = line.strip().split()
+            item_ids = clean_line.split()
             
             # Chuyen sang set (loai trung lap)
             transaction = set()
@@ -433,20 +677,29 @@ class Eclat:
         self.min_support = min_support
         self.min_items = min_items
         self.frequent_itemsets = []
+        self._total_transactions = 0
     
     def fit(self, dataset):
-        # 1. Tinh nguong support
-        min_support_count = len(dataset) * self.min_support
+        self.frequent_itemsets = []
+        self._total_transactions = len(dataset)
+        min_support_count = self._total_transactions * self.min_support
         
-        # 2. Chuyen sang Vertical Format
-        tid_dict = self._horizontal_to_vertical(dataset)
+        # Chuyen sang Vertical Format (TID-Sets)
+        tid_dict = {}
+        for tid, transaction in enumerate(dataset):
+            for item in transaction:
+                if item not in tid_dict:
+                    tid_dict[item] = set()
+                tid_dict[item].add(tid)
         
-        # 3. Loc 1-itemsets khong du support
+        # Loc items khong du support
         tid_dict = {k: v for k, v in tid_dict.items() 
                     if len(v) >= min_support_count}
         
-        # 4. De quy tim tap pho bien
-        self._eclat_recursive([], tid_dict, min_support_count)
+        # Sap xep va de quy
+        sorted_items = sorted(tid_dict.items(), 
+                              key=lambda x: len(x[1]), reverse=True)
+        self._eclat_recursive([], sorted_items, min_support_count)
         
         return self.frequent_itemsets
 \end{lstlisting}
@@ -513,7 +766,8 @@ def generate_recommendation_rules(frequent_itemsets, total_transactions,
                     'lift': lift
                 })
     
-    return sorted(rules, key=lambda x: x['lift'], reverse=True)
+    rules.sort(key=lambda x: (x['lift'], x['confidence']), reverse=True)
+    return rules
 \end{lstlisting}
 
 % ============================================================
@@ -653,27 +907,5 @@ UCI Machine Learning Repository.
 
 \end{thebibliography}
 
-% ============================================================
-% PHỤ LỤC
-% ============================================================
-\appendix
-\section{Phụ lục: Cấu trúc thư mục dự án}
-
-\begin{verbatim}
-Eclat_Project/
-|-- data/
-|   +-- raw/
-|       +-- msnbc.seq           # Du lieu goc tu UCI
-|-- docs/
-|   |-- baocao.tex              # File bao cao nay
-|   +-- *.pdf                   # Tai lieu tham khao
-|-- src/
-|   |-- data_loader.py          # Module doc du lieu
-|   |-- eclat_algo.py           # Thuat toan Eclat
-|   +-- utils.py                # Sinh luat va hien thi
-|-- main.py                     # File dieu phoi chinh
-|-- requirements.txt
-+-- README.md
-\end{verbatim}
 
 \end{document}

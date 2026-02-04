@@ -30,15 +30,11 @@ from utils import generate_recommendation_rules, print_recommendations
 def main():
     """Hàm chính điều phối toàn bộ quy trình phân tích clickstream"""
     
-    print("=" * 70)
-    print("   🎯 HỆ THỐNG GỢI Ý NỘI DUNG DỰA TRÊN THUẬT TOÁN ECLAT")
-    print("   📊 Phân tích hành vi người dùng qua dữ liệu Clickstream")
-    print("=" * 70)
+    print("=" * 60)
+    print("   HỆ THỐNG GỢI Ý NỘI DUNG - THUẬT TOÁN ECLAT")
+    print("=" * 60)
     
-    # ============================================================
-    # BƯỚC 1: TẢI DỮ LIỆU
-    # ============================================================
-    print("\n📂 BƯỚC 1: ĐỌC DỮ LIỆU CLICKSTREAM")
+    print("\n[1] ĐỌc dữ liệu clickstream")
     
     # Giới hạn số phiên để demo (có thể bỏ limit để chạy toàn bộ)
     # Lưu ý: File msnbc.seq có khoảng 989,818 phiên
@@ -48,7 +44,7 @@ def main():
     transactions = load_data(limit=DATA_LIMIT)
     
     if not transactions:
-        print("❌ Không có dữ liệu để chạy. Vui lòng kiểm tra file dữ liệu.")
+        print("Không có dữ liệu. Vui lòng kiểm tra file.")
         return
     
     total_transactions = len(transactions)
@@ -61,34 +57,23 @@ def main():
     MIN_SUPPORT = 0.02
     MIN_CONFIDENCE = 0.4    # 40% người xem A sẽ xem B thì mới gợi ý
     
-    print(f"\n⚙️ CẤU HÌNH THUẬT TOÁN:")
-    print(f"   • Min Support  = {MIN_SUPPORT*100}% (xuất hiện trong {int(total_transactions * MIN_SUPPORT):,} phiên)")
-    print(f"   • Min Confidence = {MIN_CONFIDENCE*100}% (tỷ lệ tối thiểu để gợi ý)")
+    print(f"\n[2] Cấu hình: Min Support = {MIN_SUPPORT*100}%, Min Confidence = {MIN_CONFIDENCE*100}%")
     
-    # ============================================================
-    # BƯỚC 3: CHẠY THUẬT TOÁN ECLAT
-    # ============================================================
-    print(f"\n🔍 BƯỚC 2: CHẠY THUẬT TOÁN ECLAT (Vertical Data Format)")
+    print("\n[3] Chạy thuật toán Eclat")
     
     # min_items=1: Bao gồm cả tập 1 phần tử (cần để tính Lift)
     eclat_model = Eclat(min_support=MIN_SUPPORT, min_items=1)
     frequent_itemsets = eclat_model.fit(transactions)
     
     if not frequent_itemsets:
-        print("⚠️ Không tìm thấy tập mục phổ biến nào.")
-        print("👉 Hãy thử giảm Min Support xuống (ví dụ: 0.01)")
+        print("Không tìm thấy tập phổ biến nào.")
         return
     
-    # Thống kê kết quả
     single_items = sum(1 for item, _ in frequent_itemsets if len(item) == 1)
     pair_items = sum(1 for item, _ in frequent_itemsets if len(item) == 2)
-    print(f"   • Tìm thấy {single_items} chuyên mục phổ biến (đơn lẻ)")
-    print(f"   • Tìm thấy {pair_items} cặp chuyên mục phổ biến")
+    print(f"Kết quả: {single_items} chuyên mục, {pair_items} cặp phổ biến")
 
-    # ============================================================
-    # BƯỚC 4: SINH LUẬT GỢI Ý
-    # ============================================================
-    print(f"\n📋 BƯỚC 3: SINH LUẬT GỢI Ý NỘI DUNG")
+    print("\n[4] Sinh luật gợi ý nội dung")
     
     rules = generate_recommendation_rules(
         frequent_itemsets, 
@@ -96,14 +81,10 @@ def main():
         min_confidence=MIN_CONFIDENCE
     )
     
-    # ============================================================
-    # BƯỚC 5: HIỂN THỊ KẾT QUẢ
-    # ============================================================
     if rules:
         print_recommendations(rules, top_n=TOP_RULES)
     else:
-        print("⚠️ Không tìm thấy luật nào đủ độ tin cậy.")
-        print("👉 Hãy thử giảm Min Confidence xuống (ví dụ: 0.3)")
+        print("Không tìm thấy luật nào đủ độ tin cậy.")
 
 
 if __name__ == "__main__":

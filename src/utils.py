@@ -62,7 +62,7 @@ def generate_recommendation_rules(frequent_itemsets, total_transactions, min_con
         key = tuple(sorted(itemset))
         support_lookup[key] = support_count
 
-    print(f"🔄 Đang sinh luật từ {len(frequent_itemsets)} tập phổ biến...")
+    print(f"Sinh luật từ {len(frequent_itemsets)} tập phổ biến...")
 
     # 2. Duyệt qua các tập phổ biến có từ 2 items trở lên
     for itemset, support_count_AB in frequent_itemsets:
@@ -126,7 +126,7 @@ def generate_recommendation_rules(frequent_itemsets, total_transactions, min_con
     # Sắp xếp: Ưu tiên Lift cao (tương quan mạnh), sau đó là Confidence
     rules.sort(key=lambda x: (x['lift'], x['confidence']), reverse=True)
     
-    print(f"✅ Đã sinh {len(rules)} luật thỏa mãn Confidence >= {min_confidence*100:.0f}%")
+    print(f"Đã sinh {len(rules)} luật thỏa mãn Confidence >= {min_confidence*100:.0f}%")
     
     return rules
 
@@ -134,27 +134,20 @@ def generate_recommendation_rules(frequent_itemsets, total_transactions, min_con
 def print_recommendations(rules, top_n=10):
     """
     In danh sách gợi ý nội dung ra màn hình với định dạng bảng.
-    
-    Hiển thị theo ngữ cảnh đề tài clickstream:
-    "Người xem [Tech] thường xem tiếp [News]"
-    
-    Args:
-        rules (list): Danh sách luật từ generate_recommendation_rules()
-        top_n (int): Số lượng luật hiển thị (mặc định 10)
     """
     if not rules:
-        print("\n⚠️ Không có luật gợi ý nào để hiển thị.")
+        print("\nKhông có luật gợi ý nào.")
         return
     
     actual_count = min(top_n, len(rules))
     
-    print(f"\n{'='*75}")
-    print(f"   💡 TOP {actual_count} LUẬT GỢI Ý NỘI DUNG MẠNH NHẤT")
-    print(f"{'='*75}")
+    print(f"\n{'='*60}")
+    print(f"   TOP {actual_count} LUẬT GỢI Ý NỘI DUNG")
+    print(f"{'='*60}")
     
     # Header bảng
-    print(f"\n{'STT':<4} | {'NẾU XEM':<15} | {'GỢI Ý':<15} | {'SUPPORT':<8} | {'CONF':<7} | {'LIFT':<6}")
-    print("-" * 75)
+    print(f"\n{'STT':<4} | {'NẾU XEM':<15} | {'GỢI Ý':<15} | {'SUP':<7} | {'CONF':<7} | {'LIFT':<5}")
+    print("-" * 60)
     
     for i, rule in enumerate(rules[:top_n], 1):
         antecedent_str = ", ".join(rule['antecedent'])
@@ -163,25 +156,18 @@ def print_recommendations(rules, top_n=10):
         conf_pct = f"{rule['confidence']*100:.1f}%"
         lift_val = f"{rule['lift']:.2f}"
         
-        print(f"{i:<4} | {antecedent_str:<15} | {consequent_str:<15} | {support_pct:<8} | {conf_pct:<7} | {lift_val:<6}")
+        print(f"{i:<4} | {antecedent_str:<15} | {consequent_str:<15} | {support_pct:<7} | {conf_pct:<7} | {lift_val:<5}")
     
-    print("-" * 75)
+    print("-" * 60)
     
-    # Giải thích cách đọc kết quả
-    print(f"\n📌 CÁCH ĐỌC KẾT QUẢ:")
-    print(f"   • Support: Tỷ lệ phiên xuất hiện cả 2 chuyên mục cùng nhau")
-    print(f"   • Confidence: Xác suất có điều kiện P(B|A)")
-    print(f"   • Lift: Độ tương quan (> 1 = tích cực, = 1 = độc lập, < 1 = tiêu cực)")
-    
-    # Ví dụ minh họa từ luật tốt nhất
+    # Luật tốt nhất
     if rules:
         top = rules[0]
         ant = top['antecedent'][0]
         cons = top['consequent'][0] if len(top['consequent']) == 1 else ", ".join(top['consequent'])
-        
-        print(f"\n🎯 GỢI Ý TỐT NHẤT: \"Người xem [{ant}] thường xem tiếp [{cons}]\"")
-        print(f"   → Confidence: {top['confidence']*100:.1f}% người xem {ant} cũng xem {cons}")
-        print(f"   → Lift = {top['lift']:.2f}: Xác suất cao hơn ngẫu nhiên {(top['lift']-1)*100:.0f}%\n")
+        print(f"\nGợi ý tốt nhất: Người xem [{ant}] -> gợi ý [{cons}]")
+        print(f"Lift = {top['lift']:.2f} (cao hơn ngẫu nhiên {(top['lift']-1)*100:.0f}%)\n")
+
 
 
 def export_rules_to_csv(rules, filepath):
