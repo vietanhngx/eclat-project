@@ -23,7 +23,7 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='repla
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
 from data_loader import load_data
-from eclat_algo import Eclat
+from src.eclat import Eclat
 from utils import generate_recommendation_rules, print_recommendations
 
 

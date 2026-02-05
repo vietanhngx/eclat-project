@@ -820,19 +820,21 @@ def generate_recommendation_rules(frequent_itemsets, total_transactions,
 
 \subsection{Phân tích kết quả}
 
-\textbf{Luật 1: Tổng hợp $\Rightarrow$ Phát sóng (Lift = 1.88)}
-\begin{itemize}
-    \item Ý nghĩa: Người xem mục Tổng hợp có xu hướng xem tiếp mục Phát sóng
-    \item Lift = 1.88 cho thấy xác suất cao hơn ngẫu nhiên \textbf{88\%}
-    \item Đây là luật có độ tương quan mạnh nhất
-\end{itemize}
+\begin{description}
+    \item[Luật 1: Tổng hợp $\Rightarrow$ Phát sóng (Lift = 1.88)] \hfill
+    \begin{itemize}
+        \item \textbf{Ý nghĩa}: Người xem mục Tổng hợp có xu hướng xem tiếp mục Phát sóng
+        \item \textbf{Xác suất}: Lift = 1.88 cho thấy xác suất cao hơn ngẫu nhiên \textbf{88\%}
+        \item \textbf{Đánh giá}: Đây là luật có độ tương quan mạnh nhất
+    \end{itemize}
 
-\textbf{Luật 2: Kinh doanh $\Rightarrow$ Trang chủ (Confidence = 56.8\%)}
-\begin{itemize}
-    \item Ý nghĩa: Hơn 56\% người xem Kinh doanh cũng xem Trang chủ
-    \item Đây là luật có Confidence cao nhất
-    \item Gợi ý: Nên đặt banner Trang chủ trong mục Kinh doanh
-\end{itemize}
+    \item[Luật 2: Kinh doanh $\Rightarrow$ Trang chủ (Conf = 56.8\%)] \hfill
+    \begin{itemize}
+        \item \textbf{Ý nghĩa}: Hơn 56\% người xem Kinh doanh cũng xem Trang chủ
+        \item \textbf{Đánh giá}: Đây là luật có Confidence cao nhất
+        \item \textbf{Gợi ý}: Nên đặt banner Trang chủ trong mục Kinh doanh
+    \end{itemize}
+\end{description}
 
 \subsection{Ứng dụng thực tế}
 
