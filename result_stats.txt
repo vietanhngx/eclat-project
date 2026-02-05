@@ -1,0 +1,43 @@
+============================================================
+   HỆ THỐNG GỢI Ý NỘI DUNG - THUẬT TOÁN ECLAT
+============================================================
+
+[1] ĐỌc dữ liệu clickstream
+Đã tải 989,818 phiên giao dịch.
+
+[2] Cấu hình: Min Support = 2.0%, Min Confidence = 40.0%
+
+[INFO] Thống kê Top chuyên mục phổ biến nhất (trên toàn bộ dữ liệu):
+  - Trang chủ: 31.6%
+  - Phát sóng: 21.9%
+  - Tin tức: 17.7%
+  - Công nghệ: 12.3%
+  - Địa phương: 12.3%
+
+[3] Chạy thuật toán Eclat
+Tổng phiên: 989,818 | Min Support: 19796 (2%)
+Số 1-itemsets phổ biến: 15
+Tổng số tập phổ biến: 32
+  - 1-itemsets: 15
+  - 2-itemsets: 17
+
+[4] Sinh luật gợi ý nội dung
+Sinh luật từ 32 tập phổ biến...
+Đã sinh 5 luật thỏa mãn Confidence >= 40%
+
+============================================================
+   TOP 5 LUẬT GỢI Ý NỘI DUNG
+============================================================
+
+STT  | NẾU XEM                                  | GỢI Ý                     | SUP     | CONF    | LIFT 
+----------------------------------------------------------------------------------------------------
+1    | Tổng hợp                                 | Phát sóng                 | 3.36%   | 41.3%   | 1.88 
+2    | Kinh doanh                               | Trang chủ                 | 3.31%   | 56.8%   | 1.80 
+3    | Đời sống                                 | Trang chủ                 | 2.65%   | 51.9%   | 1.64 
+4    | Tổng hợp                                 | Trang chủ                 | 3.68%   | 45.2%   | 1.43 
+5    | Tin tức                                  | Trang chủ                 | 7.55%   | 42.6%   | 1.35 
+----------------------------------------------------------------------------------------------------
+
+Gợi ý tốt nhất: Người xem [Tổng hợp] -> gợi ý [Phát sóng]
+Lift = 1.88 (cao hơn ngẫu nhiên 88%)
+

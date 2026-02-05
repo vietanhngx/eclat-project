@@ -654,7 +654,7 @@ def load_data(filepath=DATA_PATH, limit=None):
     arrow/.style={->, thick}
 ]
     \node[box] (data) {data\_loader.py\\Đọc dữ liệu};
-    \node[box, right=of data] (eclat) {eclat\_algo.py\\Thuật toán Eclat};
+    \node[box, right=of data] (eclat) {eclat.py\\Thuật toán Eclat};
     \node[box, right=of eclat] (utils) {utils.py\\Sinh luật gợi ý};
     \node[box, below=of eclat] (main) {main.py\\Điều phối};
     
@@ -667,24 +667,26 @@ def load_data(filepath=DATA_PATH, limit=None):
 \caption{Kiến trúc hệ thống}
 \end{figure}
 
-\subsection{Module Eclat (eclat\_algo.py)}
+\subsection{Module Eclat (eclat.py)}
 
 \subsubsection{Class Eclat}
 
 \begin{lstlisting}[caption={Cấu trúc class Eclat},label={lst:eclat_class}]
 class Eclat:
-    def __init__(self, min_support=0.01, min_items=1):
+    def __init__(self, min_support=0.02, min_items=1):
         self.min_support = min_support
         self.min_items = min_items
         self.frequent_itemsets = []
-        self._total_transactions = 0
-    
+        self._total_wb = 0
+
     def fit(self, dataset):
         self.frequent_itemsets = []
-        self._total_transactions = len(dataset)
-        min_support_count = self._total_transactions * self.min_support
+        self._total_wb = len(dataset)
         
-        # Chuyen sang Vertical Format (TID-Sets)
+        # 1. Tinh nguong support tuyet doi
+        min_sup = self._total_wb * self.min_support
+        
+        # 2. Chuyen doi sang Vertical Data Format (TID-Sets)
         tid_dict = {}
         for tid, transaction in enumerate(dataset):
             for item in transaction:
@@ -692,14 +694,17 @@ class Eclat:
                     tid_dict[item] = set()
                 tid_dict[item].add(tid)
         
-        # Loc items khong du support
-        tid_dict = {k: v for k, v in tid_dict.items() 
-                    if len(v) >= min_support_count}
+        # 3. Loc 1-itemsets (Pruning som)
+        sorted_items = []
+        for item, tids in tid_dict.items():
+            if len(tids) >= min_sup:
+                sorted_items.append((item, tids))
         
-        # Sap xep va de quy
-        sorted_items = sorted(tid_dict.items(), 
-                              key=lambda x: len(x[1]), reverse=True)
-        self._eclat_recursive([], sorted_items, min_support_count)
+        # Sap xep items theo tan suat giam dan
+        sorted_items.sort(key=lambda x: len(x[1]), reverse=True)
+        
+        # 4. Bat dau de quy DFS
+        self._eclat_recursive(prefix=[], items=sorted_items, min_sup=min_sup)
         
         return self.frequent_itemsets
 \end{lstlisting}
@@ -707,26 +712,27 @@ class Eclat:
 \subsubsection{Hàm đệ quy Eclat}
 
 \begin{lstlisting}[caption={Hàm đệ quy cốt lõi},label={lst:eclat_recursive}]
-def _eclat_recursive(self, prefix, tid_subset, min_support_count):
-    while tid_subset:
-        item, tids = tid_subset.pop(0)
+def _eclat_recursive(self, prefix, items, min_sup):
+    while items:
+        # Lay item dau tien
+        item, tids = items.pop(0)
         new_itemset = prefix + [item]
         
-        # Luu itemset neu du dieu kien
+        # Luu ket qua
         if len(new_itemset) >= self.min_items:
             self.frequent_itemsets.append((new_itemset, len(tids)))
         
-        # Tinh giao TID-Sets
-        new_tid_subset = []
-        for other_item, other_tids in tid_subset:
-            intersect_tids = tids & other_tids  # Phep giao
-            if len(intersect_tids) >= min_support_count:
-                new_tid_subset.append((other_item, intersect_tids))
+        # Tao danh sach ung vien tiep theo (Intersection)
+        next_items = []
+        for other_item, other_tids in items:
+            new_tids = tids & other_tids  # Phep giao
+            
+            if len(new_tids) >= min_sup: # Cat tia
+                next_items.append((other_item, new_tids))
         
-        # De quy
-        if new_tid_subset:
-            self._eclat_recursive(new_itemset, new_tid_subset, 
-                                  min_support_count)
+        # De quy DFS
+        if next_items:
+            self._eclat_recursive(new_itemset, next_items, min_sup)
 \end{lstlisting}
 
 \subsection{Module sinh luật (utils.py)}
@@ -735,19 +741,21 @@ def _eclat_recursive(self, prefix, tid_subset, min_support_count):
 def generate_recommendation_rules(frequent_itemsets, total_transactions, 
                                   min_confidence=0.5):
     rules = []
-    
-    # Tao dictionary de tra cuu support
     support_lookup = {tuple(sorted(items)): count 
                       for items, count in frequent_itemsets}
     
+    import itertools
     for itemset, support_count_AB in frequent_itemsets:
-        if len(itemset) < 2:
-            continue
-        
+        if len(itemset) < 2: continue
         support_AB = support_count_AB / total_transactions
         
-        for antecedent_item in itemset:
-            antecedent = [antecedent_item]
+        # Sinh tat ca tap con lam ve trai (X -> Y)
+        all_antecedents = []
+        for r in range(1, len(itemset)):
+            all_antecedents.extend(itertools.combinations(itemset, r))
+            
+        for antecedent_tuple in all_antecedents:
+            antecedent = list(antecedent_tuple)
             consequent = [x for x in itemset if x != antecedent_item]
             
             # Tinh Confidence va Lift

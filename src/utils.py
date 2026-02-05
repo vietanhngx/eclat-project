@@ -64,54 +64,50 @@ def generate_recommendation_rules(frequent_itemsets, total_transactions, min_con
 
     print(f"Sinh luật từ {len(frequent_itemsets)} tập phổ biến...")
 
+    import itertools
+
     # 2. Duyệt qua các tập phổ biến có từ 2 items trở lên
     for itemset, support_count_AB in frequent_itemsets:
         if len(itemset) < 2:
-            continue  # Bỏ qua tập đơn lẻ (không tạo được luật A → B)
+            continue
         
-        # Support(A ∪ B) = |T(A ∩ B)| / N
+        # Support(X ∪ Y) = Support của cả itemset
         support_AB = support_count_AB / total_transactions
-            
-        # Với tập {A, B}, tạo các luật:
-        # - A → B: Confidence = Support(A,B) / Support(A)
-        # - B → A: Confidence = Support(A,B) / Support(B)
         
-        for antecedent_item in itemset:
-            # Vế trái (Antecedent): Item được chọn làm điều kiện
-            antecedent = [antecedent_item]
-            antecedent_key = tuple(antecedent)
+        # Sinh tất cả các tập con khác rỗng của itemset làm vế trái (X)
+        # VD: itemset {A, B, C} -> X có thể là {A}, {B}, {C}, {A,B}, {A,C}, {B,C}
+        all_antecedents = []
+        for r in range(1, len(itemset)):
+            all_antecedents.extend(itertools.combinations(itemset, r))
             
-            # Vế phải (Consequent): Các items còn lại
-            consequent = [item for item in itemset if item != antecedent_item]
+        for antecedent_tuple in all_antecedents:
+            antecedent = list(antecedent_tuple)
+            antecedent_key = tuple(sorted(antecedent))
+            
+            # Vế phải (Y) = Itemset - X
+            consequent = [item for item in itemset if item not in antecedent]
             consequent_key = tuple(sorted(consequent))
             
-            # Lấy Support Count của vế trái (A) và vế phải (B)
+            # Lấy Support Count của vế trái (X)
             support_count_A = support_lookup.get(antecedent_key)
-            support_count_B = support_lookup.get(consequent_key)
             
-            # Kiểm tra: Cần có support của cả A và B để tính Lift
-            if support_count_A is None or support_count_B is None:
+            if support_count_A is None:
                 continue
             
-            # Tính Support của A và B riêng lẻ
+            # Tính các chỉ số
             support_A = support_count_A / total_transactions
-            support_B = support_count_B / total_transactions
             
-            # ============================================================
-            # CÔNG THỨC CHÍNH
-            # ============================================================
-            
-            # Confidence(A → B) = P(B|A) = Support(A ∪ B) / Support(A)
+            # Confidence(X -> Y) = Support(XY) / Support(X)
             confidence = support_AB / support_A if support_A > 0 else 0
             
-            # Lift(A → B) = Support(A ∪ B) / (Support(A) × Support(B))
-            # Công thức tương đương: Lift = Confidence / Support(B)
-            # Interpretation:
-            #   - Lift > 1: A và B xuất hiện cùng nhau nhiều hơn ngẫu nhiên (Tích cực)
-            #   - Lift = 1: A và B độc lập thống kê
-            #   - Lift < 1: A và B ít xuất hiện cùng nhau (Tiêu cực)
-            expected_support = support_A * support_B
-            lift = support_AB / expected_support if expected_support > 0 else 0
+            # Lift = Confidence / Support(Y)
+            # Cần support_B để tính Lift
+            support_count_B = support_lookup.get(consequent_key)
+            if support_count_B:
+                support_B = support_count_B / total_transactions
+                lift = confidence / support_B if support_B > 0 else 0
+            else:
+                lift = 0 # Không tính được nếu không có thông tin vế phải
             
             # Chỉ lưu luật nếu đạt ngưỡng Confidence
             if confidence >= min_confidence:
@@ -145,26 +141,47 @@ def print_recommendations(rules, top_n=10):
     print(f"   TOP {actual_count} LUẬT GỢI Ý NỘI DUNG")
     print(f"{'='*60}")
     
-    # Header bảng
-    print(f"\n{'STT':<4} | {'NẾU XEM':<15} | {'GỢI Ý':<15} | {'SUP':<7} | {'CONF':<7} | {'LIFT':<5}")
-    print("-" * 60)
+    # Tính toán độ rộng cột động dựa trên dữ liệu
+    # Mặc định tối thiểu là độ dài của Header (NẾU XEM = 7, GỢI Ý = 5)
+    max_len_ant = 7
+    max_len_cons = 5
     
-    for i, rule in enumerate(rules[:top_n], 1):
+    # Chỉ xét trong top_n luật sẽ in để tối ưu
+    rules_to_print = rules[:top_n]
+    
+    for rule in rules_to_print:
+        ant_len = len(", ".join(rule['antecedent']))
+        cons_len = len(", ".join(rule['consequent']))
+        if ant_len > max_len_ant: max_len_ant = ant_len
+        if cons_len > max_len_cons: max_len_cons = cons_len
+        
+    # Thêm padding cho thoáng
+    w_ant = max_len_ant + 2
+    w_cons = max_len_cons + 2
+    
+    # Header bảng
+    # Sử dụng biến độ rộng động trong f-string
+    print(f"\n{'STT':<4} | {f'NẾU XEM':<{w_ant}} | {f'GỢI Ý':<{w_cons}} | {'SUP':<7} | {'CONF':<7} | {'LIFT':<5}")
+    print("-" * (4 + 3 + w_ant + 3 + w_cons + 3 + 7 + 3 + 7 + 3 + 5))
+    
+    for i, rule in enumerate(rules_to_print, 1):
         antecedent_str = ", ".join(rule['antecedent'])
         consequent_str = ", ".join(rule['consequent'])
         support_pct = f"{rule['support']*100:.2f}%"
         conf_pct = f"{rule['confidence']*100:.1f}%"
         lift_val = f"{rule['lift']:.2f}"
         
-        print(f"{i:<4} | {antecedent_str:<15} | {consequent_str:<15} | {support_pct:<7} | {conf_pct:<7} | {lift_val:<5}")
+        print(f"{i:<4} | {antecedent_str:<{w_ant}} | {consequent_str:<{w_cons}} | {support_pct:<7} | {conf_pct:<7} | {lift_val:<5}")
     
-    print("-" * 60)
+    print("-" * (4 + 3 + w_ant + 3 + w_cons + 3 + 7 + 3 + 7 + 3 + 5))
     
     # Luật tốt nhất
     if rules:
         top = rules[0]
-        ant = top['antecedent'][0]
-        cons = top['consequent'][0] if len(top['consequent']) == 1 else ", ".join(top['consequent'])
+        # Tổng quát hóa: Nối chuỗi tất cả các items, không chỉ lấy item đầu tiên
+        ant = ", ".join(top['antecedent'])
+        cons = ", ".join(top['consequent'])
+        
         print(f"\nGợi ý tốt nhất: Người xem [{ant}] -> gợi ý [{cons}]")
         print(f"Lift = {top['lift']:.2f} (cao hơn ngẫu nhiên {(top['lift']-1)*100:.0f}%)\n")
 

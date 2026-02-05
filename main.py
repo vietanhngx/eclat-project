@@ -59,6 +59,21 @@ def main():
     
     print(f"\n[2] Cấu hình: Min Support = {MIN_SUPPORT*100}%, Min Confidence = {MIN_CONFIDENCE*100}%")
     
+    # --- THÊM: THỐNG KÊ TOP CHUYÊN MỤC (EDA) ---
+    print("\nThống kê Top chuyên mục phổ biến nhất (trên toàn bộ dữ liệu):")
+    # Đếm tần suất xuất hiện của từng item một cách thủ công nhanh (hoặc dùng kết quả Eclat sau)
+    # Ở đây ta dùng Counter để đếm nhanh từ raw data cho chính xác bước tiền xử lý
+    from collections import Counter
+    item_counts = Counter()
+    for trans in transactions:
+        item_counts.update(trans)
+        
+    total = len(transactions)
+    for item, count in item_counts.most_common(5):
+        sup = count / total * 100
+        print(f"  - {item}: {sup:.1f}%")
+    # ------------------------------------------------
+    
     print("\n[3] Chạy thuật toán Eclat")
     
     # min_items=1: Bao gồm cả tập 1 phần tử (cần để tính Lift)
@@ -69,9 +84,15 @@ def main():
         print("Không tìm thấy tập phổ biến nào.")
         return
     
-    single_items = sum(1 for item, _ in frequent_itemsets if len(item) == 1)
-    pair_items = sum(1 for item, _ in frequent_itemsets if len(item) == 2)
-    print(f"Kết quả: {single_items} chuyên mục, {pair_items} cặp phổ biến")
+    # Thống kê chi tiết theo kích thước
+    counts = {}
+    for item, _ in frequent_itemsets:
+        k = len(item)
+        counts[k] = counts.get(k, 0) + 1
+        
+    print(f"Tổng số tập phổ biến: {len(frequent_itemsets)}")
+    for k in sorted(counts.keys()):
+        print(f"  - {k}-itemsets: {counts[k]}")
 
     print("\n[4] Sinh luật gợi ý nội dung")
     
