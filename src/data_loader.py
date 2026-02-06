@@ -185,4 +185,4 @@ if __name__ == "__main__":
         print(f"Tổng phiên: {stats['total_sessions']}")
         print(f"Trung bình items/phiên: {stats['avg_items_per_session']:.2f}")
     else:
-        print("\n⚠️ Không đọc được dữ liệu nào.")
+        print("\n Không đọc được dữ liệu nào.")

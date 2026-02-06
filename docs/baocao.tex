@@ -392,124 +392,167 @@ D & \{2, 3, 4\} \\
 \State Chuyển đổi $D$ sang định dạng dọc: $TID\_Dict$
 \State Lọc các 1-itemsets có $|TID| < min\_support\_count$
 \State Sắp xếp $TID\_Dict$ theo $|TID|$ giảm dần
+\State \Call{Eclat\_Recursive}{$\emptyset$, $TID\_Dict$, $min\_support\_count$}
+\State \Return $F$
 
-\Procedure{Eclat\_Recursive}{$Prefix$, $TID\_Subset$, $min\_support\_count$}
-    \While{$TID\_Subset \neq \emptyset$}
-        \State $(item, tids) \gets TID\_Subset.pop(0)$ \Comment{Lấy phần tử đầu}
-        \State $NewItemset \gets Prefix \cup \{item\}$
-        \State $F \gets F \cup \{(NewItemset, |tids|)\}$ \Comment{Lưu kết quả}
+\Procedure{Eclat\_Recursive}{$Prefix$, $CurrentItems$, $min\_sup$}
+    \ForAll{$(i, T_i) \in CurrentItems$}
+        \State $NewItemset \gets Prefix \cup \{i\}$
+        \State Thêm $(NewItemset, |T_i|)$ vào $F$ \Comment{Lưu tập phổ biến}
         
-        \State $NewSubset \gets \emptyset$
-        \ForAll{$(other\_item, other\_tids) \in TID\_Subset$}
-            \State $IntersectTids \gets tids \cap other\_tids$ \Comment{Phép giao}
-            \If{$|IntersectTids| \geq min\_support\_count$}
-                \State $NewSubset \gets NewSubset \cup \{(other\_item, IntersectTids)\}$
+        \State $SuffixItems \gets \emptyset$
+        \ForAll{$(j, T_j) \in CurrentItems$ với $j > i$} 
+            \State $T_{new} \gets T_i \cap T_j$ \Comment{Giao các tập TID}
+            \If{$|T_{new}| \ge min\_sup$}
+                \State Thêm $(j, T_{new})$ vào $SuffixItems$
             \EndIf
         \EndFor
         
-        \If{$NewSubset \neq \emptyset$}
-            \State \Call{Eclat\_Recursive}{$NewItemset$, $NewSubset$, $min\_support\_count$}
+        \If{$SuffixItems \neq \emptyset$}
+            \State \Call{Eclat\_Recursive}{$NewItemset, SuffixItems, min\_sup$} \Comment{Đệ quy DFS}
         \EndIf
-    \EndWhile
+    \EndFor
 \EndProcedure
 
-\State \Call{Eclat\_Recursive}{$\emptyset$, $TID\_Dict$, $min\_support\_count$}
-\State \Return $F$
+
 \end{algorithmic}
 \end{algorithm}
 
-\subsubsection{Ví dụ minh họa từng bước}
+\subsubsection{Ví dụ minh họa chi tiết từng bước}
 
-Xét cơ sở dữ liệu với 4 giao dịch và $min\_support = 50\%$ (tức itemset phải xuất hiện trong ít nhất 2 giao dịch):
+Để hiểu rõ cơ chế hoạt động, ta sẽ đi sâu vào từng phép toán cụ thể với bộ dữ liệu mẫu.
 
+\textbf{Giả thiết bài toán:}
+\begin{itemize}
+    \item \textbf{Cơ sở dữ liệu:} 4 giao dịch (T1 đến T4).
+    \item \textbf{Ngưỡng hỗ trợ (Min Support):} 50\%.
+\end{itemize}
+
+\textbf{Bước 0: Xác định ngưỡng đếm (Min Support Count)}
+\[ min\_count = \lceil |D| \times min\_support \rceil = \lceil 4 \times 0.5 \rceil = 2 \]
+$\Rightarrow$ Bất kỳ itemset nào xuất hiện dưới 2 lần sẽ bị coi là không phổ biến và bị loại bỏ (Cắt tỉa/Pruning).
+
+\textbf{Dữ liệu đầu vào (Horizontal Format):}
 \begin{table}[H]
 \centering
-\caption{Dữ liệu đầu vào}
 \begin{tabular}{|c|l|}
-\hline
-\textbf{TID} & \textbf{Items} \\
-\hline
+\hline \textbf{TID} & \textbf{Items} \\ \hline
 1 & A, B, C \\
 2 & B, C, D \\
 3 & A, C, D \\
-4 & A, B, D \\
-\hline
+4 & A, B, D \\ \hline
 \end{tabular}
 \end{table}
 
-\textbf{Bước 1: Chuyển sang Vertical Format}
+% --- BƯỚC 1 ---
+\paragraph{Bước 1: Khởi tạo và Chuyển đổi dữ liệu}
+Quét dữ liệu đếm số lần xuất hiện của từng item và tạo danh sách TID (Transaction ID).
+
+\begin{itemize}
+    \item \textbf{Item A}: Có trong T1, T3, T4 $\rightarrow$ TID-Set = \{1, 3, 4\} (Count=3 $\ge$ 2 $\rightarrow$ Giữ)
+    \item \textbf{Item B}: Có trong T1, T2, T4 $\rightarrow$ TID-Set = \{1, 2, 4\} (Count=3 $\ge$ 2 $\rightarrow$ Giữ)
+    \item \textbf{Item C}: Có trong T1, T2, T3 $\rightarrow$ TID-Set = \{1, 2, 3\} (Count=3 $\ge$ 2 $\rightarrow$ Giữ)
+    \item \textbf{Item D}: Có trong T2, T3, T4 $\rightarrow$ TID-Set = \{2, 3, 4\} (Count=3 $\ge$ 2 $\rightarrow$ Giữ)
+\end{itemize}
+
+\textbf{Sắp xếp (Sorting):} Để thuật toán chạy tối ưu theo chiều sâu, ta sắp xếp các items theo tần suất tăng dần (hoặc giảm dần tùy cài đặt). Trong ví dụ này tần suất bằng nhau (đều là 3), ta sắp xếp theo thứ tự từ điển: \textbf{A, B, C, D}.
+
+Lúc này, danh sách \texttt{Items} để duyệt là:
+\[ L_1 = [ (A, \{1,3,4\}), (B, \{1,2,4\}), (C, \{1,2,3\}), (D, \{2,3,4\}) ] \]
+
+% --- BƯỚC 2 ---
+\paragraph{Bước 2: Vòng lặp đệ quy mở rộng nhánh A}
+Ta lấy phần tử đầu tiên là \textbf{A} làm \texttt{Prefix} (tiền tố). Ta sẽ tìm cách kết hợp A với các phần tử đứng sau nó (B, C, D) để tạo ra tập ứng viên $L_A$.
 
 \begin{table}[H]
 \centering
-\caption{TID-Sets của các 1-itemset}
-\begin{tabular}{|c|c|c|c|}
+\caption{Mở rộng nhánh Prefix = \{A\} (TID=\{1,3,4\})}
+\begin{tabular}{|c|l|c|l|}
 \hline
-\textbf{Item} & \textbf{TID-Set} & \textbf{Count} & \textbf{Support} \\
+\textbf{Suffix ($X$)} & \textbf{Phép giao: $TID(A) \cap TID(X)$} & \textbf{Count} & \textbf{Kết quả} \\
 \hline
-A & \{1, 3, 4\} & 3 & 75\% \\
-B & \{1, 2, 4\} & 3 & 75\% \\
-C & \{1, 2, 3\} & 3 & 75\% \\
-D & \{2, 3, 4\} & 3 & 75\% \\
+B & $\{1,3,4\} \cap \{1,2,4\} = \{1,4\}$ & 2 & $\ge 2$ $\rightarrow$ \textbf{Lấy \{A,B\}} \\
+\hline
+C & $\{1,3,4\} \cap \{1,2,3\} = \{1,3\}$ & 2 & $\ge 2$ $\rightarrow$ \textbf{Lấy \{A,C\}} \\
+\hline
+D & $\{1,3,4\} \cap \{2,3,4\} = \{3,4\}$ & 2 & $\ge 2$ $\rightarrow$ \textbf{Lấy \{A,D\}} \\
+\hline
+\multicolumn{4}{|c|}{\textit{Danh sách ứng viên tiếp theo $L_A = [B, C, D]$ (để tạo 3-itemsets)}} \\
 \hline
 \end{tabular}
 \end{table}
 
-Tất cả 1-itemsets đều có Support >= 50\%, nên giữ lại hết.
-
-\textbf{Bước 2: Tính TID-Sets cho 2-itemsets (bằng phép giao)}
+% --- BƯỚC 3 (Đệ quy sâu hơn) ---
+% --- BƯỚC 3 (Đệ quy sâu hơn) ---
+\paragraph{Bước 3: Đệ quy sâu hơn (Tạo 3-itemsets)}
+Từ danh sách $L_A$, ta tiếp tục đào sâu (DFS) với từng item trong đó làm prefix mới (ví dụ \{A,B\}).
 
 \begin{table}[H]
 \centering
-\caption{Tính toán 2-itemsets}
-\begin{tabular}{|l|l|c|c|c|}
+\caption{Đào sâu tìm kiếm 3-itemsets từ nhánh A}
+\begin{tabular}{|l|c|l|c|l|}
 \hline
-\textbf{Itemset} & \textbf{Phép giao} & \textbf{TID-Set} & \textbf{Count} & \textbf{Phổ biến?} \\
+\textbf{Prefix} & \textbf{Suffix} & \textbf{Phép giao TID} & \textbf{Count} & \textbf{Kết luận} \\
 \hline
-\{A, B\} & \{1,3,4\} $\cap$ \{1,2,4\} & \{1, 4\} & 2 & Có (50\%) \\
-\{A, C\} & \{1,3,4\} $\cap$ \{1,2,3\} & \{1, 3\} & 2 & Có (50\%) \\
-\{A, D\} & \{1,3,4\} $\cap$ \{2,3,4\} & \{3, 4\} & 2 & Có (50\%) \\
-\{B, C\} & \{1,2,4\} $\cap$ \{1,2,3\} & \{1, 2\} & 2 & Có (50\%) \\
-\{B, D\} & \{1,2,4\} $\cap$ \{2,3,4\} & \{2, 4\} & 2 & Có (50\%) \\
-\{C, D\} & \{1,2,3\} $\cap$ \{2,3,4\} & \{2, 3\} & 2 & Có (50\%) \\
+\{A,B\} & C & $\{1,4\} \cap \{1,3\} = \{1\}$ & 1 & $<2 \rightarrow$ \textbf{Loại (Pruned)} \\
+(TID=\{1,4\}) & D & $\{1,4\} \cap \{3,4\} = \{4\}$ & 1 & $<2 \rightarrow$ \textbf{Loại (Pruned)} \\
+\hline
+\{A,C\} & D & $\{1,3\} \cap \{3,4\} = \{3\}$ & 1 & $<2 \rightarrow$ \textbf{Loại (Pruned)} \\
+(TID=\{1,3\}) & & & & \\
 \hline
 \end{tabular}
 \end{table}
 
-\textbf{Bước 3: Tính TID-Sets cho 3-itemsets}
+$\Rightarrow$ Nhánh A không sinh ra được tập phổ biến nào có kích thước k=3. Thuật toán quay lui (backtrack).
+
+% --- BƯỚC 4 ---
+% --- BƯỚC 4 & 5 ---
+\paragraph{Bước 4 \& 5: Vòng lặp đệ quy các nhánh còn lại (B, C)}
+Sau khi xử lý xong A, ta xét tiếp B và C. D (cuối cùng) không cần xét vì không còn phần tử nào sau nó.
 
 \begin{table}[H]
 \centering
-\caption{Tính toán 3-itemsets}
-\begin{tabular}{|l|l|c|c|c|}
+\caption{Mở rộng các nhánh B và C}
+\begin{tabular}{|l|c|l|c|l|}
 \hline
-\textbf{Itemset} & \textbf{Phép giao} & \textbf{TID-Set} & \textbf{Count} & \textbf{Phổ biến?} \\
+\textbf{Prefix} & \textbf{Suffix} & \textbf{Phép giao TID} & \textbf{Count} & \textbf{Kết quả} \\
 \hline
-\{A, B, C\} & \{1,4\} $\cap$ \{1,2,3\} & \{1\} & 1 & Không (25\%) \\
-\{A, B, D\} & \{1,4\} $\cap$ \{2,3,4\} & \{4\} & 1 & Không (25\%) \\
-\{A, C, D\} & \{1,3\} $\cap$ \{2,3,4\} & \{3\} & 1 & Không (25\%) \\
-\{B, C, D\} & \{1,2\} $\cap$ \{2,3,4\} & \{2\} & 1 & Không (25\%) \\
+\textbf{\{B\}} & C & $\{1,2,4\} \cap \{1,2,3\} = \{1,2\}$ & 2 & $\ge 2 \rightarrow$ \textbf{Lấy \{B,C\}} \\
+(TID=\{1,2,4\}) & D & $\{1,2,4\} \cap \{2,3,4\} = \{2,4\}$ & 2 & $\ge 2 \rightarrow$ \textbf{Lấy \{B,D\}} \\
+\hline
+\multicolumn{5}{|c|}{\textit{Thử đào sâu từ \{B,C\}: $\{1,2\} \cap \{2,4\} = \{2\}$ (Count=1) $\rightarrow$ Loại}} \\
+\hline
+\textbf{\{C\}} & D & $\{1,2,3\} \cap \{2,3,4\} = \{2,3\}$ & 2 & $\ge 2 \rightarrow$ \textbf{Lấy \{C,D\}} \\
+(TID=\{1,2,3\}) & & & & \\
 \hline
 \end{tabular}
 \end{table}
 
-Không có 3-itemset nào đạt ngưỡng 50\%, thuật toán dừng.
+\paragraph{Tổng kết kết quả}
 
-\textbf{Bước 4: Tổng kết kết quả}
+Sau khi duyệt hết toàn bộ không gian tìm kiếm, ta thu được bảng tổng hợp các tập phổ biến như sau:
 
 \begin{table}[H]
 \centering
-\caption{Tất cả Frequent Itemsets với min\_support = 50\%}
-\begin{tabular}{|c|l|c|}
+\caption{Bảng tổng hợp các tập phổ biến tìm được ($min\_support = 50\%$)}
+\label{tab:freq_itemsets}
+\begin{tabular}{|c|l|c|c|}
 \hline
-\textbf{Kích thước} & \textbf{Frequent Itemsets} & \textbf{Số lượng} \\
+\textbf{Kích thước (k)} & \textbf{Tập phổ biến (Frequent Itemsets)} & \textbf{Số lượng} & \textbf{Ghi chú} \\
 \hline
-1-itemset & \{A\}, \{B\}, \{C\}, \{D\} & 4 \\
-2-itemset & \{A,B\}, \{A,C\}, \{A,D\}, \{B,C\}, \{B,D\}, \{C,D\} & 6 \\
+k=1 & \{A\}, \{B\}, \{C\}, \{D\} & 4 & Support = 3 (75\%) \\
 \hline
-\textbf{Tổng} & & \textbf{10} \\
+\multirow{2}{*}{k=2} & \{A,B\}, \{A,C\}, \{A,D\} & \multirow{2}{*}{6} & \multirow{2}{*}{Support = 2 (50\%)} \\
+& \{B,C\}, \{B,D\}, \{C,D\} & & \\
+\hline
+k=3 & \textit{(Không tìm được - Bị cắt tỉa)} & 0 & Không đủ ngưỡng \\
+\hline
+\textbf{Tổng cộng} & \textbf{Tổng số tập phổ biến} & \textbf{10} & \\
 \hline
 \end{tabular}
 \end{table}
+
+Kết luận: Thuật toán Eclat đã tìm ra chính xác tất cả các tập phổ biến mà không cần quét lại cơ sở dữ liệu gốc, chỉ thông qua các phép giao tập hợp TID.
 
 \subsubsection{Độ phức tạp thuật toán}
 

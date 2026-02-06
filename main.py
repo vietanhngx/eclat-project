@@ -54,7 +54,7 @@ def main():
     # ============================================================
     # min_support = 0.02: Cặp chuyên mục phải xuất hiện trong ít nhất 2% số phiên
     # min_confidence = 0.4: 40% người xem A sẽ xem B thì mới gợi ý
-    MIN_SUPPORT = 0.02
+    MIN_SUPPORT = 0.005
     MIN_CONFIDENCE = 0.4    # 40% người xem A sẽ xem B thì mới gợi ý
     
     print(f"\n[2] Cấu hình: Min Support = {MIN_SUPPORT*100}%, Min Confidence = {MIN_CONFIDENCE*100}%")

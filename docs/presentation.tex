@@ -213,7 +213,7 @@
     \end{enumerate}
 \end{frame}
 
-\begin{frame}{1. Định dạng dữ liệu (Data Format)}
+\begin{frame}{Định dạng dữ liệu (Data Format)}
     \begin{columns}[t]
         \column{0.48\textwidth}
             \textbf{A. Horizontal Format (Truyền thống)}
@@ -259,7 +259,7 @@
     \end{columns}
 \end{frame}
 
-\begin{frame}{2. Nguyên lý hoạt động cốt lõi}
+\begin{frame}{Nguyên lý hoạt động cốt lõi}
     \begin{columns}
         \column{0.5\textwidth}
         \textbf{Cơ sở toán học:}
@@ -321,41 +321,84 @@
 
 \begin{frame}{3. Quy trình thực hiện (Workflow)}
     \begin{enumerate}
-        \item \textbf{Bước 1: Khởi tạo (Initialization)}
+        \item \textbf{Bước 1: Khởi tạo & Chuyển đổi (Initialization)}
         \begin{itemize}
-            \item Quét CSDL \textbf{1 lần duy nhất} để chuyển đổi sang định dạng dọc (Vertical Format).
-            \item Lọc bỏ các item không phổ biến (có độ hỗ trợ $< min\_support$) ngay từ đầu để giảm không gian tìm kiếm.
+            \item Quét CSDL một lần để chuyển sang dạng dọc (Vertical Format).
+            \item Lọc bỏ các item không phổ biến ($Support < min\_sup$).
         \end{itemize}
-        \vspace{0.3cm}
         
-        \item \textbf{Bước 2: Tìm kiếm đệ quy (Recursive Search - DFS)}
+        \item \textbf{Bước 2: Sắp xếp (Sorting)}
         \begin{itemize}
-            \item Với mỗi itemset $P$ (prefix), kết hợp với các itemset item $Q_i$ khác.
-            \item Tính tập TID mới bằng phép giao: $TID(P \cup Q_i) = TID(P) \cap TID(Q_i)$.
-            \item Nếu kích thước tập TID mới $\ge min\_support$: 
-            \begin{itemize}
-                \item Lưu itemset $\{P, Q_i\}$ là tập phổ biến.
-                \item Tiếp tục gọi đệ quy với prefix mới là $\{P, Q_i\}$.
-            \end{itemize}
+            \item Sắp xếp các item theo tần suất tăng dần để tối ưu duyệt cây.
         \end{itemize}
-        \vspace{0.3cm}
-        
-        \item \textbf{Bước 3: Kết thúc (Termination)}
+
+        \item \textbf{Bước 3: Giao tập TID (Intersection)}
         \begin{itemize}
-            \item Quá trình dừng lại khi không còn cặp item nào để kết hợp hoặc tập giao kết quả rỗng.
-            \item Thuật toán quay lui (backtrack) để xét các nhánh khác.
+            \item Tính toán Support bằng phép giao: $TID(XY) = TID(X) \cap TID(Y)$.
+        \end{itemize}
+        
+        \item \textbf{Bước 4: Tìm kiếm chiều sâu (DFS)}
+        \begin{itemize}
+            \item Nếu Support $\ge min\_sup$ $\rightarrow$ Lưu kết quả và tiếp tục đệ quy.
+            \item Nếu Support $< min\_sup$ $\rightarrow$ Cắt tỉa nhánh (Pruning).
+        \end{itemize}
+        
+        \item \textbf{Bước 5: Quay lui (Backtrack)}
+        \begin{itemize}
+            \item Quay lại nhánh cha khi nhánh con đã thám hiểm hết.
         \end{itemize}
     \end{enumerate}
 \end{frame}
 
 
 
-% --- Slide Ví dụ 1: Input & Bước 1 ---
-\begin{frame}{Ví dụ minh họa thuật toán Eclat}
-    \textbf{Giả thiết:} 4 giao dịch, $min\_support = 50\%$ (xuất hiện $\ge 2$ lần).
-    
-    \textbf{Dữ liệu đầu vào:}
-    \begin{table}\centering\small
+
+% --- Slide Mã giả & Ví dụ minh họa (Moved here) ---
+
+\begin{frame}[fragile]{Mã giả thuật toán Eclat}
+    \scriptsize
+    \begin{algorithmic}[1]
+        \State \textbf{Input:} $DB$ (Cơ sở dữ liệu), $min\_sup$ (Ngưỡng \%)
+        \State \textbf{Output:} $F$ (Danh sách tập phổ biến)
+        
+        \State $min\_count \gets |DB| \times min\_sup$
+        \State $Items \gets$ Chuyển $DB$ sang dạng dọc (Item $\to$ TIDs)
+        \State Lọc bỏ các Item có $|TIDs| < min\_count$
+        \State Sắp xếp $Items$ theo tần suất giảm dần
+        \State \Call{EclatDFS}{$\emptyset, Items, min\_count$}
+        \State \Return $F$
+        
+        \Procedure{EclatDFS}{$Prefix, CurrentItems, min\_count$}
+            \ForAll{$(i, T_i) \in CurrentItems$}
+                \State $NewPattern \gets Prefix \cup \{i\}$
+                \State Thêm $(NewPattern, |T_i|)$ vào $F$
+                
+                \State $SuffixItems \gets \emptyset$
+                \ForAll{$(j, T_j) \in CurrentItems$ với $j > i$}
+                    \State $T_{new} \gets T_i \cap T_j$ \Comment{Giao tập TID}
+                    \If{$|T_{new}| \ge min\_count$}
+                        \State Thêm $(j, T_{new})$ vào $SuffixItems$
+                    \EndIf
+                \EndFor
+                
+                \If{$SuffixItems \neq \emptyset$}
+                    \State \Call{EclatDFS}{$NewPattern, SuffixItems, min\_count$}
+                \EndIf
+            \EndFor
+        \EndProcedure
+    \end{algorithmic}
+\end{frame}
+
+\section{Ví dụ minh họa thuật toán}
+
+\begin{frame}{Ví dụ minh họa thuật toán}
+    \textbf{Bước 0: Xác định ngưỡng đếm (Min Support Count)}
+    \[ min\_count = \lceil |D| \times min\_support \rceil = \lceil 4 \times 0.5 \rceil = 2 \]
+    $\Rightarrow$ Loại bỏ itemset xuất hiện dưới 2 lần (Pruning).
+
+    \vspace{0.2cm}
+    \textbf{Input (Horizontal Format)}
+    \begin{table}\centering\scriptsize
     \begin{tabular}{|c|l|}
     \hline \textbf{TID} & \textbf{Items} \\ \hline
     1 & A, B, C \\
@@ -365,99 +408,100 @@
     \hline \end{tabular}
     \end{table}
 
-    \textbf{Bước 1: Chuyển sang Vertical Format (TID-Sets của 1-itemset)}
-    \begin{table}\centering\small
-    \begin{tabular}{|c|l|c|c|}
-    \hline \textbf{Item} & \textbf{TID-Set} & \textbf{Count} & \textbf{Support} \\ \hline
-    A & \{1, 3, 4\} & 3 & 75\% \\
-    B & \{1, 2, 4\} & 3 & 75\% \\
-    C & \{1, 2, 3\} & 3 & 75\% \\
-    D & \{2, 3, 4\} & 3 & 75\% \\
-    \hline \end{tabular}
-    \end{table}
-    $\Rightarrow$ Tất cả đều thỏa mãn $\ge 50\%$.
-\end{frame}
-
-% --- Slide Ví dụ 2: Bước 2 & Bước 3 ---
-\begin{frame}{Ví dụ minh họa: Tính toán các Itemsets lớn hơn}
-    \textbf{Bước 2: Tính TID-Sets cho 2-itemsets (bằng phép giao)}
+    \vspace{0.2cm}
+    \textbf{Bước 1: Chuyển đổi sang Vertical Format}
+    (Tạo danh sách TID-Sets và Sắp xếp A, B, C, D)
     \begin{table}\centering\scriptsize
-    \begin{tabular}{|c|c|c|c|l|}
-    \hline \textbf{Itemset} & \textbf{Phép giao} & \textbf{TID-Set} & \textbf{Count} & \textbf{Kết luận} \\ \hline
-    \{A, B\} & \{1,3,4\} $\cap$ \{1,2,4\} & \{1, 4\} & 2 & Có (50\%) \\
-    \{A, C\} & \{1,3,4\} $\cap$ \{1,2,3\} & \{1, 3\} & 2 & Có (50\%) \\
-    \{A, D\} & \{1,3,4\} $\cap$ \{2,3,4\} & \{3, 4\} & 2 & Có (50\%) \\
-    \{B, C\} & \{1,2,4\} $\cap$ \{1,2,3\} & \{1, 2\} & 2 & Có (50\%) \\
-    \{B, D\} & \{1,2,4\} $\cap$ \{2,3,4\} & \{2, 4\} & 2 & Có (50\%) \\
-    \{C, D\} & \{1,2,3\} $\cap$ \{2,3,4\} & \{2, 3\} & 2 & Có (50\%) \\
-    \hline \end{tabular}
-    \end{table}
-
-    \textbf{Bước 3: Tính TID-Sets cho 3-itemsets}
-    \begin{table}\centering\scriptsize
-    \begin{tabular}{|c|c|c|c|l|}
-    \hline \textbf{Itemset} & \textbf{Phép giao} & \textbf{TID-Set} & \textbf{Count} & \textbf{Kết luận} \\ \hline
-    \{A, B, C\} & \{1,4\} $\cap$ \{1,2,3\} & \{1\} & 1 & Không (25\%) \\
-    \{A, B, D\} & \{1,4\} $\cap$ \{2,3,4\} & \{4\} & 1 & Không (25\%) \\
-    \{A, C, D\} & \{1,3\} $\cap$ \{2,3,4\} & \{3\} & 1 & Không (25\%) \\
-    \{B, C, D\} & \{1,2\} $\cap$ \{2,3,4\} & \{2\} & 1 & Không (25\%) \\
-    \hline \end{tabular}
-    \end{table}
-    $\Rightarrow$ Không có 3-itemset nào đạt ngưỡng, thuật toán dừng.
-\end{frame}
-
-% --- Slide Ví dụ 3: Tổng kết ---
-\begin{frame}{Ví dụ minh họa: Bước 4 - Tổng kết kết quả}
-    \textbf{Bảng tổng hợp tất cả Frequent Itemsets ($min\_support = 50\%$)}
-    
-    \vspace{0.5cm}
-    \begin{table}\centering
     \begin{tabular}{|c|l|c|}
-    \hline \textbf{Kích thước} & \textbf{Frequent Itemsets} & \textbf{Số lượng} \\ \hline
-    1-itemset & \{A\}, \{B\}, \{C\}, \{D\} & 4 \\ \hline
-    2-itemset & \{A,B\}, \{A,C\}, \{A,D\}, \{B,C\}, \{B,D\}, \{C,D\} & 6 \\ \hline
-    \textbf{Tổng} & \textbf{Tổng cộng} & \textbf{10} \\ \hline
+    \hline \textbf{Item (Suffix)} & \textbf{TID-Set} & \textbf{Status} \\ \hline
+    A & \{1, 3, 4\} (3) & $\ge$ 2 (Giữ) \\
+    B & \{1, 2, 4\} (3) & $\ge$ 2 (Giữ) \\
+    C & \{1, 2, 3\} (3) & $\ge$ 2 (Giữ) \\
+    D & \{2, 3, 4\} (3) & $\ge$ 2 (Giữ) \\
+    \hline \end{tabular}
+    \end{table}
+    \centering\footnotesize \textit{Sắp xếp items theo tần suất hoặc từ điển (A, B, C, D).}
+\end{frame}
+
+\begin{frame}{Ví dụ minh họa thuật toán}
+    \textbf{Bước 2: Mở rộng nhánh A} \\
+    \textbf{Quy trình:} Lấy \textbf{A} làm Prefix (tiền tố). Kết hợp với các items đứng sau (Suffix: B, C, D).
+    
+    \begin{table}\centering\small
+    \caption{Mở rộng nhánh Prefix = \{A\} (TID=\{1,3,4\})}
+    \begin{tabular}{|c|l|c|l|}
+    \hline
+    \textbf{Suffix ($X$)} & \textbf{Phép giao: $TID(A) \cap TID(X)$} & \textbf{Count} & \textbf{Kết quả} \\
+    \hline
+    B & $\{1,3,4\} \cap \{1,2,4\} = \{1,4\}$ & 2 & $\ge 2 \rightarrow$ \textbf{Lấy \{A,B\}} \\
+    C & $\{1,3,4\} \cap \{1,2,3\} = \{1,3\}$ & 2 & $\ge 2 \rightarrow$ \textbf{Lấy \{A,C\}} \\
+    D & $\{1,3,4\} \cap \{2,3,4\} = \{3,4\}$ & 2 & $\ge 2 \rightarrow$ \textbf{Lấy \{A,D\}} \\
+    \hline
+    \end{tabular}
+    \end{table}
+    $\Rightarrow$ Danh sách ứng viên tiếp theo $L_A = [B, C, D]$.
+\end{frame}
+
+\begin{frame}{Ví dụ minh họa thuật toán}
+    \textbf{Bước 3: Đệ quy sâu hơn} \\
+    \textbf{Quy trình:} Từ danh sách $L_A$, tiếp tục đào sâu (DFS) với từng item làm prefix mới (ví dụ \{A,B\}).
+    
+    \begin{table}\centering\small
+    \caption{Đào sâu tìm kiếm 3-itemsets từ nhánh A}
+    \begin{tabular}{|l|c|l|c|l|}
+    \hline
+    \textbf{Prefix} & \textbf{Suffix} & \textbf{Phép giao TID} & \textbf{Count} & \textbf{Kết luận} \\
+    \hline
+    \{A,B\} & C & $\{1,4\} \cap \{1,3\} = \{1\}$ & 1 & $<2 \rightarrow$ \textbf{Loại (Pruned)} \\
+    (TID=\{1,4\}) & D & $\{1,4\} \cap \{3,4\} = \{4\}$ & 1 & $<2 \rightarrow$ \textbf{Loại (Pruned)} \\
+    \hline
+    \{A,C\} & D & $\{1,3\} \cap \{3,4\} = \{3\}$ & 1 & $<2 \rightarrow$ \textbf{Loại (Pruned)} \\
+    (TID=\{1,3\}) & & & & \\
+    \hline
+    \end{tabular}
+    \end{table}
+    $\Rightarrow$ Nhánh A không sinh ra được tập phổ biến nào kích thước $k=3$. Thuật toán quay lui (backtrack).
+\end{frame}
+
+\begin{frame}{Ví dụ minh họa thuật toán}
+    \textbf{Bước 4 \& 5: Các nhánh còn lại (B, C)} \\
+    Sau khi xử lý xong A, xét tiếp nhánh B và C.
+    
+    \begin{table}\centering\small
+    \caption{Mở rộng các nhánh B và C}
+    \begin{tabular}{|l|c|l|c|l|}
+    \hline
+    \textbf{Prefix} & \textbf{Suffix} & \textbf{Phép giao TID} & \textbf{Count} & \textbf{Kết quả} \\
+    \hline
+    \textbf{\{B\}} & C & $\{1,2,4\} \cap \{1,2,3\} = \{1,2\}$ & 2 & $\ge 2 \rightarrow$ \textbf{Lấy \{B,C\}} \\
+    (TID=\{1,2,4\}) & D & $\{1,2,4\} \cap \{2,3,4\} = \{2,4\}$ & 2 & $\ge 2 \rightarrow$ \textbf{Lấy \{B,D\}} \\
+    \hline
+    \multicolumn{5}{|c|}{\textit{Thử đào sâu từ \{B,C\}: $\{1,2\} \cap \{2,4\} = \{2\}$ (Count=1) $\rightarrow$ Loại}} \\
+    \hline
+    \textbf{\{C\}} & D & $\{1,2,3\} \cap \{2,3,4\} = \{2,3\}$ & 2 & $\ge 2 \rightarrow$ \textbf{Lấy \{C,D\}} \\
+    (TID=\{1,2,3\}) & & & & \\
+    \hline
     \end{tabular}
     \end{table}
 \end{frame}
 
-\begin{frame}[fragile]{Mã giả thuật toán Eclat}
-    \scriptsize
-    \begin{algorithmic}[1]
-        \State \textbf{Đầu vào:} Cơ sở dữ liệu $D$, ngưỡng $min\_support$
-        \State \textbf{Đầu ra:} Tập hợp tất cả các Frequent Itemsets $F$
-        \State $F \gets \emptyset$
-        \State $min\_support\_count \gets |D| \times min\_support$
-        \State Chuyển đổi $D$ sang định dạng dọc: $TID\_Dict$
-        \State Lọc các 1-itemsets có $|TID| < min\_support\_count$
-        \State Sắp xếp $TID\_Dict$ theo $|TID|$ giảm dần
-        
-        \Procedure{ECLAT\_RECURSIVE}{$Prefix, TID\_Subset, min\_support\_count$}
-            \While{$TID\_Subset \neq \emptyset$}
-                \State $(item, tids) \gets TID\_Subset.pop(0)$ \Comment{Lấy phần tử đầu}
-                \State $NewItemset \gets Prefix \cup \{item\}$
-                \State $F \gets F \cup \{(NewItemset, |tids|)\}$ \Comment{Lưu kết quả}
-                
-                \State $NewSubset \gets \emptyset$
-                \ForAll{$(other\_item, other\_tids) \in TID\_Subset$}
-                    \State $IntersectTids \gets tids \cap other\_tids$ \Comment{Phép giao}
-                    \If{$|IntersectTids| \ge min\_support\_count$}
-                        \State $NewSubset \gets NewSubset \cup \{(other\_item, IntersectTids)\}$
-                    \EndIf
-                \EndFor
-                
-                \If{$NewSubset \neq \emptyset$}
-                    \State \Call{ECLAT\_RECURSIVE}{$NewItemset, NewSubset, min\_support\_count$}
-                \EndIf
-            \EndWhile
-        \EndProcedure
-        
-        \State \Call{ECLAT\_RECURSIVE}{$\emptyset, TID\_Dict, min\_support\_count$}
-        \State \Return $F$
-    \end{algorithmic}
+\begin{frame}{Ví dụ minh họa thuật toán}
+    \textbf{Tổng kết kết quả}
+    Sau khi duyệt hết toàn bộ không gian, ta thu được bảng tổng hợp:
+    
+    \begin{table}\centering
+    \begin{tabular}{|c|l|c|l|}
+    \hline \textbf{Kích thước} & \textbf{Frequent Itemsets} & \textbf{Slg} & \textbf{Ghi chú} \\ \hline
+    k=1 & \{A\}, \{B\}, \{C\}, \{D\} & 4 & Support = 3 (75\%) \\ \hline
+    \multirow{2}{*}{k=2} & \{A,B\}, \{A,C\}, \{A,D\} & \multirow{2}{*}{6} & \multirow{2}{*}{Support = 2 (50\%)} \\
+                         & \{B,C\}, \{B,D\}, \{C,D\} & & \\ \hline
+    k=3 & \textit{(Không tìm được)} & 0 & Bị cắt tỉa (Pruned) \\ \hline
+    \textbf{Tổng} & \textbf{Tổng số tập phổ biến} & \textbf{10} & \\ \hline
+    \end{tabular}
+    \end{table}
+    
+    \textbf{Kết luận:} Eclat tìm ra chính xác tất cả các tập phổ biến mà \textbf{không cần quét lại CSDL gốc}.
 \end{frame}
-
-
 
 % ============================================================
 % CHƯƠNG 3: DỮ LIỆU VÀ TIỀN XỬ LÝ
@@ -516,6 +560,8 @@
 % ============================================================
 \section{Triển khai thuật toán}
 
+
+
 \begin{frame}{Kiến trúc hệ thống}
     \centering
     \begin{tikzpicture}[node distance=1.2cm, box/.style={rectangle, draw, rounded corners, fill=blue!10, text centered, minimum width=2.5cm}]
@@ -565,6 +611,9 @@ def _eclat_recursive(self, prefix, items, min_sup):
             self._eclat_recursive(new_itemset, next_items, min_sup)
     \end{lstlisting}
 \end{frame}
+% (End of Implementation section)
+    
+
 
 % ============================================================
 % CHƯƠNG 5: KẾT QUẢ VÀ ĐÁNH GIÁ
