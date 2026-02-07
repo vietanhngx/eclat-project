@@ -896,6 +896,69 @@ Dựa trên kết quả phân tích, các gợi ý cho hệ thống:
     \item Tối ưu layout để tăng cross-navigation giữa các chuyên mục có Lift cao
 \end{enumerate}
 
+
+% ============================================================
+% 5.6 SO SÁNH HIỆU NĂNG THỰC NGHIỆM VỚI APRIORI
+% ============================================================
+\subsection{So sánh hiệu năng thực nghiệm với Apriori}
+
+Để kiểm chứng tính ưu việt của thuật toán Eclat đã cài đặt, nhóm thực hiện đã tiến hành so sánh thực nghiệm với thuật toán truyền thống Apriori trên cùng một tập dữ liệu con.
+
+\subsubsection{Thiết lập thực nghiệm}
+
+Để có cái nhìn khách quan nhất, nhóm đã tiến hành so sánh trên \textbf{toàn bộ tập dữ liệu gốc} (thay vì chỉ dùng tập con):
+\begin{itemize}
+    \item \textbf{Dữ liệu thử nghiệm:} Toàn bộ 989,818 phiên giao dịch của bộ dữ liệu MSNBC.
+    \item \textbf{Ngưỡng Support:} Thay đổi từ 0.05 (5\%) xuống 0.01 (1\%).
+    \item \textbf{Môi trường:} Python 3.x, chạy trên cùng một máy tính.
+    \item \textbf{Chỉ số đo lường:} Thời gian thực thi (Execution Time) và Bộ nhớ đỉnh (Peak Memory).
+\end{itemize}
+
+\subsubsection{Kết quả đo lường}
+
+Bảng dưới đây thể hiện kết quả so sánh chi tiết khi chạy hai thuật toán với các ngưỡng Support khác nhau:
+
+\begin{table}[H]
+\centering
+\caption{Bảng so sánh hiệu năng Apriori vs Eclat (989,818 giao dịch)}
+\label{tab:comparison_results}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\multirow{2}{*}{\textbf{Min Support}} & \multicolumn{2}{c|}{\textbf{Thời gian (giây)}} & \multicolumn{2}{c|}{\textbf{Bộ nhớ đỉnh (MB)}} \\ \cline{2-5} 
+ & \textbf{Apriori} & \textbf{Eclat} & \textbf{Apriori} & \textbf{Eclat} \\ \hline
+5\% & 7.54s & \textbf{1.99s} & \textbf{0.04} & 95.55 \\ \hline
+3\% & 8.36s & \textbf{2.07s} & \textbf{0.02} & 108.18 \\ \hline
+2\% & 15.12s & \textbf{3.50s} & \textbf{0.03} & 108.68 \\ \hline
+1\% & 15.62s & \textbf{2.16s} & \textbf{0.04} & 111.81 \\ \hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{images/comparison_chart.png}
+\caption{Biểu đồ so sánh Thời gian và Bộ nhớ giữa hai thuật toán}
+\label{fig:algo_comparison}
+\end{figure}
+
+\subsubsection{Nhận xét và Đánh giá}
+
+Từ kết quả thực nghiệm trên gần 1 triệu giao dịch, ta có các nhận xét sau:
+
+\begin{enumerate}
+    \item \textbf{Về tốc độ (Time Efficiency):}
+    \begin{itemize}
+        \item Thuật toán \textbf{Eclat nhanh hơn gấp 4-7 lần} so với Apriori trên tập dữ liệu đầy đủ.
+        \item Cụ thể tại ngưỡng 1\%, Eclat chỉ mất 2.16s so với 15.62s của Apriori.
+        \item Điều này khẳng định Eclat mở rộng (scale) tốt hơn khi làm việc với tập dữ liệu lớn.
+    \end{itemize}
+    
+    \item \textbf{Về bộ nhớ (Memory Usage):}
+    \begin{itemize}
+        \item \textbf{Apriori tiêu thụ rất ít bộ nhớ} (< 0.1 MB) do chỉ cần lưu trữ các ứng viên hiện tại và duyệt tuần tự file.
+        \item \textbf{Eclat tiêu thụ khoảng 112 MB RAM} để lưu cấu trúc TID-List của 1 triệu giao dịch. Tuy nhiên, mức tiêu thụ này hoàn toàn chấp nhận được trên các máy tính cá nhân hiện nay (thường có 8-16GB RAM).
+    \end{itemize}
+\end{enumerate}
+
 % ============================================================
 % CHƯƠNG 6: KẾT LUẬN
 % ============================================================
@@ -914,9 +977,10 @@ Dựa trên kết quả phân tích, các gợi ý cho hệ thống:
 \subsection{Hạn chế}
 
 \begin{itemize}
-    \item Dữ liệu từ năm 1999, có thể không phản ánh hành vi người dùng hiện đại
-    \item Chỉ xét các cặp 2 chuyên mục, chưa mở rộng cho n-itemsets với n > 2
-    \item Chưa triển khai giao diện web để demo trực quan
+    \item \textbf{Dữ liệu cũ (1999):} Có thể không phản ánh chính xác hành vi người dùng hiện đại.
+    \item \textbf{Thứ tự truy cập:} Eclat chỉ xét tập hợp (Set) nên bỏ qua thông tin về \textit{trình tự} click của người dùng (Sequential Mining).
+    \item \textbf{Bộ nhớ:} Như thực nghiệm đã chỉ ra, Eclat tiêu tốn nhiều RAM hơn Apriori khi xử lý dữ liệu lớn.
+    \item Chưa triển khai giao diện web để demo trực quan.
 \end{itemize}
 
 \subsection{Hướng phát triển}

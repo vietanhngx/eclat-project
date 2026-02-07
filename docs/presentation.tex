@@ -321,7 +321,7 @@
 
 \begin{frame}{3. Quy trình thực hiện (Workflow)}
     \begin{enumerate}
-        \item \textbf{Bước 1: Khởi tạo & Chuyển đổi (Initialization)}
+        \item \textbf{Bước 1: Khởi tạo \& Chuyển đổi (Initialization)}
         \begin{itemize}
             \item Quét CSDL một lần để chuyển sang dạng dọc (Vertical Format).
             \item Lọc bỏ các item không phổ biến ($Support < min\_sup$).
@@ -637,7 +637,11 @@ def _eclat_recursive(self, prefix, items, min_sup):
     \end{itemize}
     
 
+
 \end{frame}
+
+
+% --- KẾT QUẢ KHAI PHÁ LUẬT ---
 
 \begin{frame}{Top 5 Luật gợi ý mạnh nhất}
     \begin{table}
@@ -673,6 +677,50 @@ def _eclat_recursive(self, prefix, items, min_sup):
     \end{itemize}
 \end{frame}
 
+% --- THỰC NGHIỆM SO SÁNH ---
+
+\begin{frame}{Thực nghiệm: So sánh Eclat và Apriori}
+    \textbf{Mục tiêu:} Chứng minh hiệu quả của Eclat so với thuật toán truyền thống Apriori trên cùng bộ dữ liệu.
+    
+    \vspace{0.2cm}
+    \textbf{Thiết lập thực nghiệm:}
+    \begin{itemize}
+        \item \textbf{Dữ liệu}: \textbf{Toàn bộ 989,818 phiên giao dịch} (MSNBC.com).
+        \item \textbf{Tham số}: Min Support thay đổi từ 5\% xuống 1\%.
+        \item \textbf{Môi trường}: Python 3.x, chạy trên cùng một máy tính.
+    \end{itemize}
+
+    \vspace{0.2cm}
+    \textbf{Kết quả đo lường (Tại Min Support = 1\%):}
+    \begin{table}\centering\small
+    \begin{tabular}{|l|c|c|}
+    \hline
+    \textbf{Thuật toán} & \textbf{Thời gian (s)} & \textbf{Bộ nhớ đỉnh (MB)} \\
+    \hline
+    \textbf{Apriori} & 15.62s & \textbf{0.04 MB} \\
+    \hline
+    \textbf{Eclat} & \textbf{2.16s} & 111.81 MB \\
+    \hline
+    \textbf{Kết luận} & \textbf{Nhanh hơn $\approx$ 7 lần} & Tốn bộ nhớ hơn \\
+    \hline
+    \end{tabular}
+    \end{table}
+\end{frame}
+
+\begin{frame}{Biểu đồ so sánh hiệu năng}
+    \begin{figure}
+        \centering
+        \includegraphics[width=1.0\textwidth]{images/comparison_chart.png}
+        \caption{So sánh Thời gian thực thi và Bộ nhớ sử dụng giữa Apriori và Eclat}
+    \end{figure}
+    
+    \textbf{Nhận xét:}
+    \begin{itemize}
+        \item \textbf{Thời gian}: Eclat nhanh hơn đáng kể khi Support giảm (dữ liệu phức tạp hơn) nhờ không phải quét lại CSDL.
+        \item \textbf{Bộ nhớ}: Eclat tốn nhiều RAM hơn để lưu trữ cấu trúc TID-Sets (Vertical Format), đây là sự đánh đổi (Trade-off) để lấy tốc độ.
+    \end{itemize}
+\end{frame}
+
 % ============================================================
 % CHƯƠNG 6: KẾT LUẬN
 % ============================================================
@@ -690,8 +738,9 @@ def _eclat_recursive(self, prefix, items, min_sup):
 \begin{frame}{Hạn chế và Hướng phát triển}
     \textbf{Hạn chế:}
     \begin{itemize}
-        \item Dữ liệu cũ (1999).
-        \item Mới chỉ xét cặp 2 chuyên mục (k=2).
+        \item Dữ liệu cũ (1999), chưa phản ánh trends hiện tại.
+        \item Thuật toán Eclat tiêu tốn nhiều bộ nhớ hơn (RAM) do lưu trữ TID-Sets.
+        \item Chưa xét đến \textbf{thứ tự} click (Sequential Mining) mà chỉ xét sự xuất hiện đồng thời.
     \end{itemize}
 
     \vspace{0.5cm}
