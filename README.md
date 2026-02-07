@@ -23,20 +23,23 @@ Phân tích dữ liệu log truy cập (clickstream) để tìm ra các nhóm n�
 
 ## 📂 Cấu trúc thư mục
 
-```
 Eclat_Project/
 |-- data/
 |   +-- raw/
 |       +-- msnbc.seq           # Dữ liệu gốc từ UCI
 |-- docs/
 |   |-- baocao.tex              # Báo cáo LaTeX chính
-|   +-- scikit-learn_user_guide.pdf (Reference)
+|   |-- presentation.tex        # Slide thuyết trình
+|   +-- images/                 # Hình ảnh biểu đồ
 |-- src/
 |   |-- data_loader.py          # Module đọc và tiền xử lý dữ liệu
-|   |-- eclat_algo.py           # Thuật toán Eclat (Vertical Data Format)
+|   |-- eclat.py                # Thuật toán Eclat (Vertical Data Format)
+|   |-- apriori.py              # Thuật toán Apriori (để so sánh)
 |   +-- utils.py                # Sinh luật và hiển thị gợi ý
 |-- main.py                     # File điều phối chính (Entry point)
-|-- requirements.txt            # Dependencies (No external lib required)
+|-- compare_algorithms.py       # Script so sánh hiệu năng Eclat vs Apriori
+|-- comparison_results.csv      # Kết quả so sánh dạng CSV
+|-- requirements.txt            # Dependencies (matplotlib, etc.)
 +-- README.md                   # File hướng dẫn này
 ```
 
@@ -54,6 +57,14 @@ python main.py
 - `MIN_SUPPORT = 0.02` (2%) - Ngưỡng hỗ trợ tối thiểu
 - `MIN_CONFIDENCE = 0.4` (40%) - Ngưỡng độ tin cậy tối thiểu
 - `DATA_LIMIT = None` - Đọc toàn bộ dữ liệu
+
+### 2. So sánh hiệu năng Eclat vs Apriori
+Kịch bản: Chạy cả 2 thuật toán trên cùng tập dữ liệu (989,818 dòng) với các ngưỡng Support khác nhau.
+
+```bash
+python compare_algorithms.py
+```
+*Kết quả sẽ được lưu vào `comparison_results.csv` và vẽ biểu đồ vào `docs/images/comparison_chart.png`.*
 
 ## 📊 Dữ liệu
 
@@ -129,6 +140,18 @@ STT  | NẾU XEM         | GỢI Ý           | SUPPORT  | CONF    | LIFT
 4    | Tổng hợp        | Trang chủ       | 3.68%    | 45.2%   | 1.43
 5    | Tin tức         | Trang chủ       | 7.55%    | 42.6%   | 1.35
 ```
+
+## ⚖️ So sánh hiệu năng Eclat vs Apriori
+
+Thực nghiệm trên toàn bộ tập dữ liệu (với Min Support = 1%):
+
+| Tiêu chí | Apriori (Horizontal) | Eclat (Vertical) | Nhận xét |
+|---|---|---|---|
+| **Thời gian** | 15.62s | **2.16s** | **Eclat nhanh hơn ~7 lần** |
+| **Bộ nhớ (RAM)** | **0.04 MB** | 111.81 MB | Apriori tốn ít RAM hơn |
+| **Cơ chế** | Quét lại DB nhiều lần | Giao TID-Sets trên RAM | Space-Time Trade-off |
+
+> **Kết luận:** Eclat đánh đổi việc tiêu tốn bộ nhớ để đạt được tốc độ xử lý vượt trội, phù hợp với các hệ thống hiện đại có dung lượng RAM lớn.
 
 ## 📚 Tài liệu tham khảo
 
